@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <CL/cl.h>
+#include "image/Image.h"
 
 // OpenCL source code
 const char* OpenCLSource[] = {
@@ -31,7 +32,8 @@ int InitialData2[20] = {35,51,54,58,55,32,36,69,27,39,35,40,16,44,55,14,58,75,18
 // *********************************************************************
 int main(int argc, char **argv)
 {
-  // Two integer source vectors in Host memory
+	Image image;
+	// Two integer source vectors in Host memory
   int HostVector1[SIZE], HostVector2[SIZE];
 
   // Initialize with some interesting repeating data
