@@ -1,7 +1,11 @@
 #include "Image.h"
 
+#include <stdio.h>
+
 Image::Image(void)
 {
+	image = NULL;
+	previewImage = NULL;
 }
 
 Image::~Image(void)
@@ -40,10 +44,18 @@ void Image::setExposure(float newExposure)
 
 float* Image::getHDR()
 {
+	if(image == NULL)
+	{
+		image = new float[height * width * 3];
+	}
 	return image;
 }
 
 guchar* Image::getPreviewImage()
 {
+	if(previewImage == NULL)
+	{
+		previewImage = new guchar[height * width * 3];
+	}
 	return previewImage;
 }

@@ -19,9 +19,13 @@ int main(int argc, char **argv)
 	clGetDeviceInfo(cdDevice, CL_DRIVER_VERSION, sizeof(cBuffer), &cBuffer, NULL);
 	printf("CL_DRIVER_VERSION: %s\n\n", cBuffer);
 
-	FILE *file = fopen("clocks.hdr", "r");
+	//FILE *file = fopen("clocks.hdr", "r");
+	FILE *file = fopen("memorial.hdr", "r");
 	Radiance *radiance = new Radiance(file);
 	radiance->readFile();
 	printf("\n\nThe End\n\n");
+
+	system("Pause");
+
 	return 0;
 }

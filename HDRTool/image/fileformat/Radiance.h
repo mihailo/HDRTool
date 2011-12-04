@@ -12,11 +12,13 @@ private:
 	void readRadianceHeader(Image *image);
 	void readRadianceData(Image *image);
 	void RLERead(Trgbe* scanline, int size);
+
+	int RLEWrite(Trgbe* scanline, int size);
 public:
 	Radiance(FILE *file);
 	~Radiance();
 
 
 	Image* readFile();
-	void writeFile(Image *hdr);
+	void writeFile(Image *image);
 };
