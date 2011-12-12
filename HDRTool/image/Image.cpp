@@ -51,6 +51,11 @@ float* Image::getHDR()
 	return image;
 }
 
+void Image::setHDR(float *newHDR) 
+{
+	image = newHDR;
+}
+
 guchar* Image::getPreviewImage()
 {
 	if(previewImage == NULL)
@@ -58,4 +63,9 @@ guchar* Image::getPreviewImage()
 		previewImage = new guchar[height * width * 3];
 	}
 	return previewImage;
+}
+
+void Image::setPreviewImage(guchar *newPreviewImage)
+{
+	previewImage = newPreviewImage;
 }

@@ -3,6 +3,10 @@
 #include <string.h>
 #include <math.h>
 
+Radiance::Radiance()
+{
+}
+
 Radiance::Radiance(FILE *file)
 {
 	imageFile = file;
@@ -10,6 +14,11 @@ Radiance::Radiance(FILE *file)
 
 Radiance::~Radiance()
 {
+}
+
+void Radiance::setFile(FILE *file)
+{
+	imageFile = file;
 }
 
 Image* Radiance::readFile()
@@ -55,7 +64,6 @@ void Radiance::readRadianceHeader(Image *image)
 		{
 			exposure = fval;
 			printf("read exposure = %f", exposure);
-			image->setExposure(exposure);
 		}
 	}
 	
@@ -64,6 +72,7 @@ void Radiance::readRadianceHeader(Image *image)
 		exposure = 1.0f;
 	
 	printf("Exposure = %f\n", exposure);
+	image->setExposure(exposure);
 	
 	if( !format )
 	{
@@ -93,12 +102,12 @@ inline float clampS( const float v, const float min, const float max )
 	return v;
 }
 
-inline void rgbe2rgb(const Trgbe_pixel rgbe, float exposure, float *r, float *g, float *b)
+void  Radiance::rgbe2rgb(const Trgbe_pixel rgbe, float exposure, float *r, float *g, float *b)
 {
 	if( rgbe.e!=0 )     // a non-zero pixel
 	{
 		int e = rgbe.e - (int)(128 + 8);
-		double f = ldexp( 1.0, e ) * WHITE_EFFICACY / exposure;
+		double f = ldexp( 1.0, e ) /* WHITE_EFFICACY / exposure*/;
 		
 		*r = (float)(rgbe.r * f);
 		*g = (float)(rgbe.g * f);
@@ -121,15 +130,17 @@ void Radiance::readRadianceData(Image *image)
 	Trgbe_pixel* pic = new Trgbe_pixel[image->getWidth() * image->getHeight()]; //malloc(image->getWidth() * image->getHeight() * sizeof(Trgbe_pixel));
     
 	int y = 0;
-	for( y = 0 ; y < image->getHeight() ; y++ )
+	for( y = 0 ; y < image->getHeight(); y++ )
 	{
 		// read rle header
+		printf("read line: %d \n", y);
 		Trgbe header[4];
 		fread(header, sizeof(header), 1, imageFile);
 		if( header[0] != 2 || header[1] != 2 || (header[2]<<8) + header[3] != image->getWidth() )
 		{
 			//--- simple scanline (not rle)
 			size_t rez = fread(scanline + 4, sizeof(Trgbe), 4 * image->getWidth() - 4, imageFile);
+			printf("fread rez = %d\n");
 			if( rez != 4 * image->getWidth() - 4 )
 			{
 				printf( "RGBE: not enough data to read in the simple format.\n" );
@@ -157,7 +168,6 @@ void Radiance::readRadianceData(Image *image)
 			int channel = 0;
 			for( channel = 0 ; channel < 4 ; channel++ ) 
 			{
-				printf("RLERead = %d %d", scanline+image->getWidth() * channel, image->getWidth());
 				RLERead(scanline+image->getWidth() * channel, image->getWidth());
 			}
 			//--- write scanline to the image
@@ -170,8 +180,13 @@ void Radiance::readRadianceData(Image *image)
 				pic[y * image->getWidth() + x].g = scanline[x + image->getWidth() * 1];
 				pic[y * image->getWidth() + x].b = scanline[x + image->getWidth() * 2];
 				pic[y * image->getWidth() + x].e = scanline[x + image->getWidth() * 3];
+				//printf("%d ", scanline[x + image->getWidth() * 3]);
+				//printf("%d %d %d %d | ", scanline[x + image->getWidth() * 0], scanline[x + image->getWidth() * 1], 
+				//	scanline[x + image->getWidth() * 2], scanline[x + image->getWidth() * 3]);
 			}
+			//printf("\n");
 		}
+
 	}
 	
 	//creatStopwatch();
@@ -182,24 +197,31 @@ void Radiance::readRadianceData(Image *image)
 		int x;
 		for(x = 0; x < image->getWidth(); x++)
 		{
-			float r,g,b;
+			float r = -134;
+			float g = -134;
+			float b = -134;
 			rgbe2rgb(pic[y * image->getWidth() + x], image->getExposure(), &r, &g, &b);
 			
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = r;
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = g;
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = b;
+
+			//printf("%f %f %f | ", r, g, b);
 			
-			image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 0] = clampS(r, 0.0f, 255.0f);
-			image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 1] = clampS(g, 0.0f, 255.0f);
-			image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 2] = clampS(b, 0.0f, 255.0f);
+			//image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 0] = clampS(r, 0.0f, 255.0f);
+			//image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 1] = clampS(g, 0.0f, 255.0f);
+			//image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 2] = clampS(b, 0.0f, 255.0f);
 		}
+		//printf("\n");
+
+
 	}
 	//float time = getTime(timer_id);
 	//addTime("convert rgbe to rgb: ", time);
 	//destroyStopwatch();
 	
-	delete []pic;
-	delete []scanline;
+	delete[] pic;
+	delete[] scanline;
 }
 
 void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
@@ -208,7 +230,9 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 	while( peek < size )
 	{
 		Trgbe p[2];
-		fread(p, sizeof(p), 1, imageFile);
+		size_t rez = fread(p, sizeof(p), 1, imageFile);
+		//printf("fread rez = %d\n", rez);
+		//printf(" %d %d", p[0], p[1]);
 		if( p[0]>128 )
 		{
 			// a run
@@ -228,12 +252,13 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 			int nonrun_len = p[0]-1;
 			if( nonrun_len>0 )
 			{
-				fread(scanline+peek, sizeof(*scanline), nonrun_len, imageFile);
+				size_t rez1 = fread(scanline+peek, sizeof(*scanline), nonrun_len, imageFile);
+				//printf("fread rez1 = %d\n", rez1);
 				peek += nonrun_len;
 			}
 		}
 	}
-	printf("peek %d, size %d", peek, size);
+	printf("peek %d, size %d \n", peek, size);
 	if( peek!=size )
 	{
 		printf( "RGBE: difference in size while reading RLE scanline\n");
@@ -286,7 +311,9 @@ int Radiance::RLEWrite(Trgbe* scanline, int size)
 			buf[0] = peek;
 			int i;
 			for(i = 0; i<peek; i++)
+			{
 				buf[i + 1] = scanline[i];
+			}
 			fwrite(buf, sizeof(Trgbe), peek + 1, imageFile);
 			delete[] buf;//free(buf); //delete[] buf;
 		}
@@ -302,7 +329,7 @@ int Radiance::RLEWrite(Trgbe* scanline, int size)
 	return 0;
 }
 
-void rgb2rgbe( float r, float g, float b, Trgbe_pixel *rgbe)
+void  Radiance::rgb2rgbe( float r, float g, float b, Trgbe_pixel *rgbe)
 {
 	r /= WHITE_EFFICACY;
 	g /= WHITE_EFFICACY;
@@ -335,7 +362,7 @@ void Radiance::writeFile(Image *image)
 	// header information
 	fprintf(imageFile, "#?RADIANCE\n");  // file format specifier
 	fprintf(imageFile, "# PFStools writer to Radiance RGBE format\n");
-  
+	fprintf(imageFile, "EXPOSURE=%f\n", image->getExposure());
     //    if( exposure_isset )
     //      fprintf(file, "EXPOSURE=%f\n", exposure);
     //    if( gamma_isset )
@@ -348,10 +375,10 @@ void Radiance::writeFile(Image *image)
 	fprintf(imageFile, "-Y %d +X %d\n", image->getHeight(), image->getWidth());
   
     // image run length encoded
-	Trgbe* scanlineR = new Trgbe[image->getWidth()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
-	Trgbe* scanlineG = new Trgbe[image->getWidth()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
-	Trgbe* scanlineB = new Trgbe[image->getWidth()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
-	Trgbe* scanlineE = new Trgbe[image->getWidth()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
+	Trgbe* scanlineR = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
+	Trgbe* scanlineG = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
+	Trgbe* scanlineB = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
+	Trgbe* scanlineE = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
 	
 	//creatStopwatch();
 	//int timer_id = startStopwatch();
@@ -361,12 +388,17 @@ void Radiance::writeFile(Image *image)
 		for(x = 0; x < image->getWidth(); x++)
 		{
 			Trgbe_pixel p;
-			rgb2rgbe(image->getHDR()[y * image->getWidth() * 3  + x * 3 + 0], image->getHDR()[y * image->getWidth() * 3  + x * 3 + 1], image->getHDR()[y * image->getWidth() * 3  + x * 3 + 2], &p);
+			rgb2rgbe(image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0], 
+				image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1], 
+				image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2], &p);
 			scanlineR[y * image->getWidth() + x] = p.r;
 			scanlineG[y * image->getWidth() + x] = p.g;
 			scanlineB[y * image->getWidth() + x] = p.b;
 			scanlineE[y * image->getWidth() + x] = p.e;
+
+			printf("%d %d %d %d |", p.r, p.g, p.b, p.e);
 		}
+		printf("\n");
 	}
 	
 	//float time = getTime(timer_id);

@@ -27,5 +27,8 @@ public:
 	void setExposure(float newExposure);
 
 	float* getHDR();
-	guchar *getPreviewImage();
+	void setHDR(float *newHDR);
+
+	guchar* getPreviewImage();
+	void setPreviewImage(guchar *newPreviewImage);
 };
