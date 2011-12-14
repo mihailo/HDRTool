@@ -11,7 +11,7 @@ class VectorADD:public OpenClComputeUnit
 private:
 	OpenCLCore *core;
 
-	void *srcA, *srcB, *dst;        // Host buffers for OpenCL test
+	float *srcA, *srcB, *dst;        // Host buffers for OpenCL test
 	void* Golden;                   // Host buffer for host golden processing cross check
 
 	size_t szGlobalWorkSize;        // 1D var for Total # of work items

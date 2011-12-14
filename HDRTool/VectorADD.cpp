@@ -18,11 +18,18 @@ void VectorADD::allocateOpenCLMemory()
 	cl_int ciErr1, ciErr2;			// Error code var
 	
 	// Allocate and initialize host arrays 
-    srcA = (void *)malloc(sizeof(cl_float) * szGlobalWorkSize);
-    srcB = (void *)malloc(sizeof(cl_float) * szGlobalWorkSize);
-    dst = (void *)malloc(sizeof(cl_float) * szGlobalWorkSize);
-    Golden = (void *)malloc(sizeof(cl_float) * iNumElements);
+    srcA = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
+    srcB = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
+    dst = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
+    Golden = (float *)malloc(sizeof(cl_float) * iNumElements);
     
+	int i = 0;
+	for(i = 0; i < szGlobalWorkSize; i++)
+	{
+		(srcA[i]) = i;
+		(srcB[i]) = i;
+		(dst[i]) = i;
+	}
 
    
 
@@ -85,6 +92,12 @@ void VectorADD::getDataFromOpenCLMemory()
 
     // Compute and compare results for golden-host and report errors and pass/fail
     logFile("Comparing against Host/C++ computation...\n\n"); 
+	int i = 0;
+	for(i = 0; i < szGlobalWorkSize; i++)
+	{
+		logFile("%f ", dst[i]);
+	}
+	logFile("\n");
     //VectorAddHost ((const float*)srcA, (const float*)srcB, (float*)Golden, iNumElements);
     //shrBOOL bMatch = shrComparefet((const float*)Golden, (const float*)dst, (unsigned int)iNumElements, 0.0f, 0);
 
