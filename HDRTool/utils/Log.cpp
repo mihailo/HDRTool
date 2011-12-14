@@ -14,7 +14,7 @@ using namespace std;
 // Optional LogFileName Override function
 // *********************************************************************
 char* cLogFilePathAndName = NULL;
-void shrSetLogFileName (const char* cOverRideName)
+void setLogFileName (const char* cOverRideName)
 {
     if( cLogFilePathAndName != NULL ) {
         free(cLogFilePathAndName);
@@ -30,7 +30,7 @@ void shrSetLogFileName (const char* cOverRideName)
 
 // Function to log standardized information to console, file or both
 // *********************************************************************
-static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list vaArgList)
+static int logV(int iLogMode, int iErrNum, const char* cFormatString, va_list vaArgList)
 {
     static FILE* pFileStream0 = NULL;
     static FILE* pFileStream1 = NULL;
@@ -43,7 +43,7 @@ static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list
         // if the default filename has not been overriden, set to default
         if (cLogFilePathAndName == NULL)
         {
-            shrSetLogFileName(DEFAULTLOGFILE); 
+            setLogFileName(DEFAULTLOGFILE); 
         }
 
         #ifdef _WIN32   // Windows version
@@ -401,13 +401,13 @@ static int shrLogV(int iLogMode, int iErrNum, const char* cFormatString, va_list
 
 // Function to log standardized information to console, file or both
 // *********************************************************************
-int shrLogEx(int iLogMode = LOGCONSOLE, int iErrNum = 0, const char* cFormatString = "", ...)
+int logEx(int iLogMode = LOGCONSOLE, int iErrNum = 0, const char* cFormatString = "", ...)
 {
     va_list vaArgList;
 
     // Prepare variable agument list 
     va_start(vaArgList, cFormatString);
-    int ret = shrLogV(iLogMode, iErrNum, cFormatString, vaArgList);
+    int ret = logV(iLogMode, iErrNum, cFormatString, vaArgList);
 
     // end variable argument handler
     va_end(vaArgList);
@@ -417,13 +417,13 @@ int shrLogEx(int iLogMode = LOGCONSOLE, int iErrNum = 0, const char* cFormatStri
 
 // Function to log standardized information to console, file or both
 // *********************************************************************
-int shrLog(const char* cFormatString = "", ...)
+int logFile(const char* cFormatString = "", ...)
 {
     va_list vaArgList;
 
     // Prepare variable agument list 
     va_start(vaArgList, cFormatString);
-    int ret = shrLogV(LOGBOTH, 0, cFormatString, vaArgList);
+    int ret = logV(LOGBOTH, 0, cFormatString, vaArgList);
 
     // end variable argument handler
     va_end(vaArgList);
