@@ -140,8 +140,8 @@ int main(int argc, char **argv)
 	printf("size of trgbe %d\n", sizeof(Trgbe));
 	
 	Image *image = new Image();
-	image->setWidth(16);
-	image->setHeight(32);
+	image->setWidth(1024);
+	image->setHeight(345);
 	int x,y;
 	for(y=0; y<image->getHeight(); y++)
 	{

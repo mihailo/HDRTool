@@ -51,17 +51,18 @@ void ConversionRGB2RGBE::allocateOpenCLMemory()
 	cl_floatImage = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		size, NULL, &ciErr1);
 
+	unsigned int sizeRGBE = sizeof(cl_uint) * image->getHeight() * image->getWidth();
 	cl_intChannelR = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
-		sizeof(cl_uint) * image->getHeight() * image->getHeight(), NULL, &ciErr2);
+		sizeRGBE, NULL, &ciErr2);
     ciErr1 |= ciErr2;
 	cl_intChannelG = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
-		sizeof(cl_uint) * image->getHeight() * image->getHeight(), NULL, &ciErr2);
+		sizeRGBE, NULL, &ciErr2);
     ciErr1 |= ciErr2;
 	cl_intChannelB = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
-		sizeof(cl_uint) * image->getHeight() * image->getHeight(), NULL, &ciErr2);
+		sizeRGBE, NULL, &ciErr2);
     ciErr1 |= ciErr2;
 	cl_intChannelE = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
-		sizeof(cl_uint) * image->getHeight() * image->getHeight(), NULL, &ciErr2);
+		sizeRGBE, NULL, &ciErr2);
     ciErr1 |= ciErr2;
     logFile("clCreateBuffer...\n"); 
     if (ciErr1 != CL_SUCCESS)
@@ -69,11 +70,11 @@ void ConversionRGB2RGBE::allocateOpenCLMemory()
         logFile("Error in clCreateBuffer, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
     }
 }
-int height, width;
+
 void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
 {
-	height = image->getHeight();
-	width = image->getWidth();
+	int height = image->getHeight();
+	int width = image->getWidth();
 	
 	cl_int ciErr1;			// Error code var	
 	// Set the Argument values
