@@ -140,8 +140,8 @@ int main(int argc, char **argv)
 	printf("size of trgbe %d\n", sizeof(Trgbe));
 	
 	Image *image = new Image();
-	image->setWidth(1024);
-	image->setHeight(345);
+	image->setWidth(2400);
+	image->setHeight(4500);
 	int x,y;
 	for(y=0; y<image->getHeight(); y++)
 	{
@@ -152,8 +152,9 @@ int main(int argc, char **argv)
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
 		}
 	}
+	
 
-	for(y=0; y<image->getHeight(); y++)
+	/*for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
@@ -161,7 +162,7 @@ int main(int argc, char **argv)
 			printf("%f %f %f ", adr[0], adr[1], adr[2]);
 		}
 		printf("\n\n");
-	}
+	}*/
 
 
 	ConversionRGB2RGBE *conv = new ConversionRGB2RGBE();
@@ -170,16 +171,18 @@ int main(int argc, char **argv)
 	g = new unsigned int[image->getHeight()*image->getWidth()];
 	b = new unsigned int[image->getHeight()*image->getWidth()];
 	e = new unsigned int[image->getHeight()*image->getWidth()];
+	
+	printf("sad\n");
 	conv->convertRGB2RGBE(image, r, g, b, e);
 	
-	for(y=0; y<image->getHeight(); y++)
+	/*for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
 			printf("%u %u %u %u ", r[y*image->getWidth() + x], g[y*image->getWidth() + x], b[y*image->getWidth() + x], e[y*image->getWidth() + x]);
 		}
 		printf("\n\n");
-	}
+	}*/
 	
 	printf("\n\nThe End\n\n");
 

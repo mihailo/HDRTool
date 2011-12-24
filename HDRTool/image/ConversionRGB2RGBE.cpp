@@ -34,8 +34,8 @@ void ConversionRGB2RGBE::convertRGB2RGBE(Image *img,
 	localWorkSize[0] = BLOCK_SIZE;
 	localWorkSize[1] = BLOCK_SIZE;
 	
-	//TODO round values on upper value
-	printf("%d %d \n", image->getHeight(), image->getWidth());
+	//round values on upper value
+	logFile("%d %d \n", image->getHeight(), image->getWidth());
 	globalWorkSize[0] = roundUp(BLOCK_SIZE, image->getHeight());
 	globalWorkSize[1] = roundUp(BLOCK_SIZE, image->getWidth());
 
@@ -67,7 +67,7 @@ void ConversionRGB2RGBE::allocateOpenCLMemory()
     logFile("clCreateBuffer...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
-        logFile("Error in clCreateBuffer, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+		logFile("%d :Error in clCreateBuffer, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
     }
 }
 
@@ -76,7 +76,7 @@ void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
 	int height = image->getHeight();
 	int width = image->getWidth();
 	
-	cl_int ciErr1;			// Error code var	
+	cl_int ciErr1;				
 	// Set the Argument values
 	ciErr1 = clSetKernelArg(core->getOpenCLKernel(), 0, 
 		sizeof(cl_mem), (void*)&cl_floatImage);
@@ -95,17 +95,17 @@ void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
     logFile("clSetKernelArg 0 - 6...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
-        logFile("Error in clSetKernelArg, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+		logFile("%d :Error in clSetKernelArg, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
     }
 
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
     // Asynchronous write of data to GPU device
-	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * 3;
+	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
 		size, image->getHDR(), 0, NULL, NULL);
-    logFile("clEnqueueWriteBuffer (float image)...\n"); 
+    logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
 		logFile("%d :Error in clEnqueueWriteBuffer, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
@@ -125,11 +125,20 @@ void ConversionRGB2RGBE::getDataFromOpenCLMemory()
 		size, channelB, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_intChannelE, CL_TRUE, 0, 
 		size, channelE, 0, NULL, NULL);
-    logFile("clEnqueueReadBuffer (channels RGBE)...\n\n"); 
+    logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
 		logFile("%d :Error in clEnqueueReadBuffer, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
     }
+}
+
+void ConversionRGB2RGBE::clearDeviceMemory()
+{
+	clReleaseMemObject(cl_floatImage);
+	clReleaseMemObject(cl_intChannelR);
+	clReleaseMemObject(cl_intChannelG);
+	clReleaseMemObject(cl_intChannelB);
+	clReleaseMemObject(cl_intChannelE);
 }
 
 size_t* ConversionRGB2RGBE::getSzGlobalWorkSize()

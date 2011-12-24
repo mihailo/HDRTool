@@ -20,6 +20,8 @@ void OpenCLCore::runComputeUnit()
 	compute->setInputDataToOpenCLMemory();
 	runKernel();
 	compute->getDataFromOpenCLMemory();
+	compute->clearDeviceMemory();
+	releaseKernel();
 }
 
 OpenCLCore::~OpenCLCore()
@@ -120,6 +122,13 @@ void OpenCLCore::runKernel()
         logFile("%d :Error in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
      //   Cleanup(argc, argv, EXIT_FAILURE);
     }
+}
+
+void OpenCLCore::releaseKernel()
+{
+	clReleaseKernel(ckKernel);
+	clReleaseCommandQueue(cqCommandQueue);
+	clReleaseContext(cxGPUContext);
 }
 
 cl_context OpenCLCore::getGPUContext()

@@ -33,6 +33,7 @@ public:
 	void allocateOpenCLMemory();
 	void setInputDataToOpenCLMemory();
 	void getDataFromOpenCLMemory();
+	void clearDeviceMemory();
 
 	void convertRGB2RGBE(Image *image, unsigned int *channelR, unsigned int *channelG, unsigned int *channelB, unsigned int *channelE);
 

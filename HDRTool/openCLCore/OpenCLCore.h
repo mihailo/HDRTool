@@ -28,6 +28,7 @@ private:
 	void setupOpenClPlatform();
 	void createKernel();
 	void runKernel();
+	void releaseKernel();
 public:
 	OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile, char *kName);
 	~OpenCLCore();
