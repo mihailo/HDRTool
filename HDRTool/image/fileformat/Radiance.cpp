@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "../../utils/Consts.h"
+
 Radiance::Radiance()
 {
 }
@@ -166,7 +168,7 @@ void Radiance::readRadianceData(Image *image)
 			//--- rle scanline
 			//--- each channel is encoded separately
 			int channel = 0;
-			for( channel = 0 ; channel < 4 ; channel++ ) 
+			for( channel = 0 ; channel < RGBE_NUM_OF_CHANNELS; channel++ ) 
 			{
 				RLERead(scanline+image->getWidth() * channel, image->getWidth());
 			}

@@ -7,9 +7,16 @@
 
 void VectorADD::start()
 {
-	szGlobalWorkSize = 10;        // 1D var for Total # of work items
-	szLocalWorkSize = 10;
-	core = new OpenCLCore(this, "vectorADD.cl");
+	//int szGlobalWorkSize[2];        // 1D var for Total # of work items
+	//int intszLocalWorkSize[2];
+
+	szLocalWorkSize[0] = 2;
+	szLocalWorkSize[1] = 1;
+	
+	szGlobalWorkSize[0] = 2;
+	szGlobalWorkSize[1] = 5;
+	
+	core = new OpenCLCore(this, "vectorADD.cl", "VectorAdd");
 	core->runComputeUnit();
 }
 
@@ -18,13 +25,13 @@ void VectorADD::allocateOpenCLMemory()
 	cl_int ciErr1, ciErr2;			// Error code var
 	
 	// Allocate and initialize host arrays 
-    srcA = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
-    srcB = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
-    dst = (float *)malloc(sizeof(cl_float) * szGlobalWorkSize);
+    srcA = (float *)malloc(sizeof(cl_float) * 10);
+    srcB = (float *)malloc(sizeof(cl_float) * 10);
+    dst = (float *)malloc(sizeof(cl_float) * 10);
     Golden = (float *)malloc(sizeof(cl_float) * iNumElements);
     
 	int i = 0;
-	for(i = 0; i < szGlobalWorkSize; i++)
+	for(i = 0; i < 10; i++)
 	{
 		(srcA[i]) = i;
 		(srcB[i]) = i;
@@ -34,10 +41,10 @@ void VectorADD::allocateOpenCLMemory()
    
 
     // Allocate the OpenCL buffer memory objects for source and result on the device GMEM
-	cmDevSrcA = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_ONLY, sizeof(cl_float) * szGlobalWorkSize, NULL, &ciErr1);
-    cmDevSrcB = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_ONLY, sizeof(cl_float) * szGlobalWorkSize, NULL, &ciErr2);
+	cmDevSrcA = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_ONLY, sizeof(cl_float) * 10, NULL, &ciErr1);
+    cmDevSrcB = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_ONLY, sizeof(cl_float) * 10, NULL, &ciErr2);
     ciErr1 |= ciErr2;
-    cmDevDst = clCreateBuffer(core->getGPUContext(), CL_MEM_WRITE_ONLY, sizeof(cl_float) * szGlobalWorkSize, NULL, &ciErr2);
+    cmDevDst = clCreateBuffer(core->getGPUContext(), CL_MEM_WRITE_ONLY, sizeof(cl_float) * 10, NULL, &ciErr2);
     ciErr1 |= ciErr2;
     logFile("clCreateBuffer...\n"); 
     if (ciErr1 != CL_SUCCESS)
@@ -65,8 +72,8 @@ void VectorADD::setInputDataToOpenCLMemory()
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
     // Asynchronous write of data to GPU device
-	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cmDevSrcA, CL_FALSE, 0, sizeof(cl_float) * szGlobalWorkSize, srcA, 0, NULL, NULL);
-    ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cmDevSrcB, CL_FALSE, 0, sizeof(cl_float) * szGlobalWorkSize, srcB, 0, NULL, NULL);
+	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cmDevSrcA, CL_FALSE, 0, sizeof(cl_float) * 10, srcA, 0, NULL, NULL);
+    ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cmDevSrcB, CL_FALSE, 0, sizeof(cl_float) * 10, srcB, 0, NULL, NULL);
     logFile("clEnqueueWriteBuffer (SrcA and SrcB)...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -81,7 +88,7 @@ void VectorADD::getDataFromOpenCLMemory()
 
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
-	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cmDevDst, CL_TRUE, 0, sizeof(cl_float) * szGlobalWorkSize, dst, 0, NULL, NULL);
+	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cmDevDst, CL_TRUE, 0, sizeof(cl_float) * 10, dst, 0, NULL, NULL);
     logFile("clEnqueueReadBuffer (Dst)...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -93,7 +100,7 @@ void VectorADD::getDataFromOpenCLMemory()
     // Compute and compare results for golden-host and report errors and pass/fail
     logFile("Comparing against Host/C++ computation...\n\n"); 
 	int i = 0;
-	for(i = 0; i < szGlobalWorkSize; i++)
+	for(i = 0; i < 10; i++)
 	{
 		logFile("%f ", dst[i]);
 	}
@@ -108,9 +115,9 @@ void VectorADD::getDataFromOpenCLMemory()
 
 size_t* VectorADD::getSzGlobalWorkSize()
 {
-	return &szGlobalWorkSize;
+	return szGlobalWorkSize;
 }
 size_t* VectorADD::getSzLocalWorkSize()
 {
-	return &szLocalWorkSize;
+	return szLocalWorkSize;
 }

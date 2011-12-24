@@ -1,8 +1,6 @@
 #ifndef IOFILE_H_
 #define IOFILE_H_
 
-
-#define WHITE_EFFICACY 179.0
   
 
 typedef unsigned char Trgbe;

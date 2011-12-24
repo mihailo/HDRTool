@@ -5,10 +5,11 @@
 #include "../utils/clUtil/OpenCLUtil.h"
 
 
-OpenCLCore::OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile)
+OpenCLCore::OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile, char *kName)
 {
 	compute = computeUnit;
 	sourceFile = clSourceFile;
+	kernelName = kName;
 	setupOpenClPlatform();
 }
 
@@ -35,7 +36,7 @@ void OpenCLCore::setupOpenClPlatform()
     logFile("clGetPlatformID...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clGetPlatformID, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clGetPlatformID, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     }
 
     //Get the devices
@@ -43,7 +44,7 @@ void OpenCLCore::setupOpenClPlatform()
     logFile("clGetDeviceIDs...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clGetDeviceIDs, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clGetDeviceIDs, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     }
 	char cBuffer[1024];
 	clGetDeviceInfo(cdDevice, CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
@@ -56,7 +57,7 @@ void OpenCLCore::setupOpenClPlatform()
     logFile("clCreateContext...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clCreateContext, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clCreateContext, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     }
 
     // Create a command-queue
@@ -64,7 +65,7 @@ void OpenCLCore::setupOpenClPlatform()
     logFile("clCreateCommandQueue...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clCreateCommandQueue, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clCreateCommandQueue, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     }
 }
 
@@ -80,7 +81,7 @@ void OpenCLCore::createKernel()
     logFile("clCreateProgramWithSource...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clCreateProgramWithSource, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clCreateProgramWithSource, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     //    Cleanup(argc, argv, EXIT_FAILURE);
     }
 
@@ -94,16 +95,16 @@ void OpenCLCore::createKernel()
     logFile("clBuildProgram...\n"); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clBuildProgram, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clBuildProgram, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
    //     Cleanup(argc, argv, EXIT_FAILURE);
     }
 
     // Create the kernel
-    ckKernel = clCreateKernel(cpProgram, "VectorAdd", &clError);
-    logFile("clCreateKernel (VectorAdd)...\n"); 
+    ckKernel = clCreateKernel(cpProgram, kernelName, &clError);
+    logFile("clCreateKernel (%s)...\n", kernelName); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clCreateKernel, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+		logFile("%d :Error in clCreateKernel, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     //    Cleanup(argc, argv, EXIT_FAILURE);
     }
 }
@@ -112,11 +113,11 @@ void OpenCLCore::runKernel()
 {
 	// Launch kernel
     cl_int clError;
-	clError = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel, 1, NULL, compute->getSzGlobalWorkSize(), compute->getSzLocalWorkSize(), 0, NULL, NULL);
-    logFile("clEnqueueNDRangeKernel (VectorAdd)...\n"); 
+	clError = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel, 2, NULL, compute->getSzGlobalWorkSize(), compute->getSzLocalWorkSize(), 0, NULL, NULL);
+	logFile("clEnqueueNDRangeKernel (%s)...\n", kernelName); 
     if (clError != CL_SUCCESS)
     {
-        logFile("Error in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n", __LINE__, __FILE__);
+        logFile("%d :Error in clEnqueueNDRangeKernel, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
      //   Cleanup(argc, argv, EXIT_FAILURE);
     }
 }

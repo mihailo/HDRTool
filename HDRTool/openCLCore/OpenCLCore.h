@@ -13,6 +13,7 @@ class OpenCLCore
 {
 private:
 	char *sourceFile;
+	char *kernelName;
 	OpenClComputeUnit *compute;
 
 	cl_platform_id cpPlatform;      // OpenCL platform
@@ -28,7 +29,7 @@ private:
 	void createKernel();
 	void runKernel();
 public:
-	OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile);
+	OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile, char *kName);
 	~OpenCLCore();
 
 	void runComputeUnit();

@@ -14,6 +14,9 @@ __kernel void VectorAdd(__global const float* a, __global const float* b, __glob
 {
     // get index into global data array
     int iGID = get_global_id(0);
+	int jGID = get_global_id(1);
+
+	iGID = iGID * get_global_size(1) + jGID;
 
     // bound check (equivalent to the limit on a 'for' loop for standard/serial C code
     if (iGID >= iNumElements)

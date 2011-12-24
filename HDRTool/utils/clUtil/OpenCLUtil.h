@@ -6,6 +6,6 @@
 
 
 extern "C" char* oclLoadProgSource(const char* cFilename, const char* cPreamble, size_t* szFinalLength);
-
+extern "C" size_t roundUp(int group_size, int global_size);
 
 #endif

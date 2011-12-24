@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "../utils/Consts.h"
 Image::Image(void)
 {
 	image = NULL;
@@ -46,7 +47,7 @@ float* Image::getHDR()
 {
 	if(image == NULL)
 	{
-		image = new float[height * width * 3];
+		image = new float[height * width * RGB_NUM_OF_CHANNELS];
 	}
 	return image;
 }
@@ -60,7 +61,7 @@ guchar* Image::getPreviewImage()
 {
 	if(previewImage == NULL)
 	{
-		previewImage = new guchar[height * width * 3];
+		previewImage = new guchar[height * width * RGB_NUM_OF_CHANNELS];
 	}
 	return previewImage;
 }

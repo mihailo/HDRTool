@@ -14,8 +14,8 @@ private:
 	float *srcA, *srcB, *dst;        // Host buffers for OpenCL test
 	void* Golden;                   // Host buffer for host golden processing cross check
 
-	size_t szGlobalWorkSize;        // 1D var for Total # of work items
-	size_t szLocalWorkSize;		    // 1D var for # of work items in the work group	
+	size_t szGlobalWorkSize[2];        // 1D var for Total # of work items
+	size_t szLocalWorkSize[2];		    // 1D var for # of work items in the work group	
 
 	// demo config vars
 	static const int iNumElements = 11444777;	// Length of float arrays to process (odd # for illustration)
