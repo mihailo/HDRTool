@@ -13,8 +13,6 @@ ConversionRGB2RGBE::ConversionRGB2RGBE()
 ConversionRGB2RGBE::~ConversionRGB2RGBE()
 {
 	delete core;
-	delete[] globalWorkSize;
-	delete[] localWorkSize;
 }
 
 void ConversionRGB2RGBE::convertRGB2RGBE(Image *img, 

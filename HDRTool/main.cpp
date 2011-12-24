@@ -9,6 +9,7 @@
 #include "image/fileformat/Radiance.h"
 #include "VectorADD.h"
 #include "image/ConversionRGB2RGBE.h"
+#include "image/ConversionRGBE2RGB.h"
 
 
 
@@ -32,7 +33,113 @@ const char* cExecutableName = NULL;
 
 
 
+void testRGB2RGBE()
+{
+	printf("size of %d \n", sizeof(unsigned char));
+	printf("size of unsigned int %d \n", sizeof(unsigned int));
+	printf("size of int %d \n", sizeof(int));
+	printf("size of cl_int %d \n", sizeof(cl_int));
 
+	printf("size of float %d \n", sizeof(float));
+	printf("size of cl_float %d \n", sizeof(cl_float));
+
+	printf("size of trgbe %d\n", sizeof(Trgbe));
+	
+	Image *image = new Image();
+	image->setWidth(2400);
+	image->setHeight(4500);
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+		}
+	}
+	
+
+	/*for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			float *adr = &image->getHDR()[(y*image->getWidth()+x) * 3];
+			printf("%f %f %f ", adr[0], adr[1], adr[2]);
+		}
+		printf("\n\n");
+	}*/
+
+
+	ConversionRGB2RGBE *conv = new ConversionRGB2RGBE();
+	unsigned int *r, *g, *b, *e;
+	r = new unsigned int[image->getHeight()*image->getWidth()];
+	g = new unsigned int[image->getHeight()*image->getWidth()];
+	b = new unsigned int[image->getHeight()*image->getWidth()];
+	e = new unsigned int[image->getHeight()*image->getWidth()];
+	
+	printf("sad\n");
+	conv->convertRGB2RGBE(image, r, g, b, e);
+	
+	/*for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			printf("%u %u %u %u ", r[y*image->getWidth() + x], g[y*image->getWidth() + x], b[y*image->getWidth() + x], e[y*image->getWidth() + x]);
+		}
+		printf("\n\n");
+	}*/
+}
+
+void testRGBE2RGB()
+{
+	Image *image = new Image();
+	image->setExposure(1.0);
+	image->setWidth(1024);
+	image->setHeight(512);
+
+	image->getHDR();
+
+	unsigned int *r, *g, *b, *e;
+	r = new unsigned int[image->getHeight()*image->getWidth()];
+	g = new unsigned int[image->getHeight()*image->getWidth()];
+	b = new unsigned int[image->getHeight()*image->getWidth()];
+	e = new unsigned int[image->getHeight()*image->getWidth()];
+
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			r[y * image->getWidth() + x] = 45;
+			g[y * image->getWidth() + x] = 91;
+			b[y * image->getWidth() + x] = 137;
+			e[y * image->getWidth() + x] = 123;
+		}
+	}
+	ConversionRGBE2RGB *conv = new ConversionRGBE2RGB();
+	printf("sad\n");
+	conv->convertRGBE2RGB(r, g, b, e, image);
+
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			float *adr = &image->getHDR()[(y*image->getWidth()+x) * 3];
+			printf("%f %f %f ", adr[0], adr[1], adr[2]);
+		}
+		printf("\n\n");
+	}
+
+	/*for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			printf("%u %u %u %u ", r[y*image->getWidth() + x], g[y*image->getWidth() + x], b[y*image->getWidth() + x], e[y*image->getWidth() + x]);
+		}
+		printf("\n\n");
+	}*/
+}
 
 
 
@@ -129,60 +236,7 @@ int main(int argc, char **argv)
 	/*VectorADD vector;
 	vector.start();*/
 
-	printf("size of %d \n", sizeof(unsigned char));
-	printf("size of unsigned int %d \n", sizeof(unsigned int));
-	printf("size of int %d \n", sizeof(int));
-	printf("size of cl_int %d \n", sizeof(cl_int));
-
-	printf("size of float %d \n", sizeof(float));
-	printf("size of cl_float %d \n", sizeof(cl_float));
-
-	printf("size of trgbe %d\n", sizeof(Trgbe));
-	
-	Image *image = new Image();
-	image->setWidth(2400);
-	image->setHeight(4500);
-	int x,y;
-	for(y=0; y<image->getHeight(); y++)
-	{
-		for(x=0; x<image->getWidth(); x++)
-		{
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
-		}
-	}
-	
-
-	/*for(y=0; y<image->getHeight(); y++)
-	{
-		for(x=0; x<image->getWidth(); x++)
-		{
-			float *adr = &image->getHDR()[(y*image->getWidth()+x) * 3];
-			printf("%f %f %f ", adr[0], adr[1], adr[2]);
-		}
-		printf("\n\n");
-	}*/
-
-
-	ConversionRGB2RGBE *conv = new ConversionRGB2RGBE();
-	unsigned int *r, *g, *b, *e;
-	r = new unsigned int[image->getHeight()*image->getWidth()];
-	g = new unsigned int[image->getHeight()*image->getWidth()];
-	b = new unsigned int[image->getHeight()*image->getWidth()];
-	e = new unsigned int[image->getHeight()*image->getWidth()];
-	
-	printf("sad\n");
-	conv->convertRGB2RGBE(image, r, g, b, e);
-	
-	/*for(y=0; y<image->getHeight(); y++)
-	{
-		for(x=0; x<image->getWidth(); x++)
-		{
-			printf("%u %u %u %u ", r[y*image->getWidth() + x], g[y*image->getWidth() + x], b[y*image->getWidth() + x], e[y*image->getWidth() + x]);
-		}
-		printf("\n\n");
-	}*/
+	testRGBE2RGB();
 	
 	printf("\n\nThe End\n\n");
 
