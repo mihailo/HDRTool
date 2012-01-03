@@ -12,11 +12,14 @@ private:
 	OpenCLCore *core;
 
 	Image *image;
-	unsigned int *pic;
+	unsigned int *picture;
 	float *avLuminance, *maxLuminance;
+	float normMaxLum;
+	float divider;
+	float biasP;
 	
 	cl_mem cl_floatImage;
-	cl_mem cl_pic;
+	cl_mem cl_picture;
 
 	size_t globalWorkSize[2], localWorkSize[2];
 public:
@@ -28,7 +31,7 @@ public:
 	void getDataFromOpenCLMemory();
 	void clearDeviceMemory();
 
-	void toneMapping_Drago03(Image *image, float *avLum, float maxLum, unsigned int *picture);
+	void toneMapping_Drago03(Image *image, float *avLum, float *maxLum, unsigned int *picture, float bias);
 
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	
