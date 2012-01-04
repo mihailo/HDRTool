@@ -10,6 +10,7 @@
 #include "VectorADD.h"
 #include "image/ConversionRGB2RGBE.h"
 #include "image/ConversionRGBE2RGB.h"
+#include "tonemapping/LuminancePixel.h"
 
 
 
@@ -142,6 +143,28 @@ void testRGBE2RGB()
 }
 
 
+void testLuminancePixel() 
+{
+	Image *image = new Image();
+	image->setWidth(2400);
+	image->setHeight(4500);
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = x;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			if(x == 1234 && y == 34) image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+		}
+	}
+
+	LuminancePixel *lum = new LuminancePixel();
+	float avLum, maxLum;
+	lum->calculate_luminance_pixel(image, &avLum, &maxLum);
+	printf("avLum=%f maxLum=%f\n", avLum, maxLum);
+}
 
 int main(int argc, char **argv)
 {
@@ -236,7 +259,8 @@ int main(int argc, char **argv)
 	/*VectorADD vector;
 	vector.start();*/
 
-	testRGBE2RGB();
+	testLuminancePixel();
+	//testRGBE2RGB();
 	
 	printf("\n\nThe End\n\n");
 
