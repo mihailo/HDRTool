@@ -2,13 +2,13 @@ float biasFunc(float b, float x)
 {
 	return pow(x, b);		// pow(x, log(bias)/log(0.5)
 }
-float clamp(float v, float min, float max)
+float clampQ(float v, float min, float max)
 {
 	if(v < min) v = min;
 	if(v > max) v = max;
 	return v;
 }
-__kernel__ void tone_mapping_drago03(unsigned int width, unsigned int height, 
+__kernel void tone_mapping_drago03(unsigned int width, unsigned int height, 
 									 __global const float* image, 
 									 __global unsigned int* pic, 
 									 float avLum, float normMaxLum, float biasP, float divider)
@@ -23,8 +23,8 @@ __kernel__ void tone_mapping_drago03(unsigned int width, unsigned int height,
 		float yg = ( log(Yw+1.0f)/interpol ) / divider;
 
 		float scale = yg / image[y * width * 3 + 3 * x + 1];
-		pic[y * width * 3 + 3 * x + 0] = (guchar)(clamp(hdr_cuda[y * width * 3 + 3 * x + 0] * scale, 0.0f, 1.0f) * 255.0f);
-		pic[y * width * 3 + 3 * x + 1] = (guchar)(clamp(hdr_cuda[y * width * 3 + 3 * x + 1] * scale, 0.0f, 1.0f) * 255.0f);
-		pic[y * width * 3 + 3 * x + 2] = (guchar)(clamp(hdr_cuda[y * width * 3 + 3 * x + 2] * scale, 0.0f, 1.0f) * 255.0f);
+		pic[y * width * 3 + 3 * x + 0] = (unsigned int)(clampQ(image[y * width * 3 + 3 * x + 0] * scale, 0.0f, 1.0f) * 255.0f);
+		pic[y * width * 3 + 3 * x + 1] = (unsigned int)(clampQ(image[y * width * 3 + 3 * x + 1] * scale, 0.0f, 1.0f) * 255.0f);
+		pic[y * width * 3 + 3 * x + 2] = (unsigned int)(clampQ(image[y * width * 3 + 3 * x + 2] * scale, 0.0f, 1.0f) * 255.0f);
 	}
 }

@@ -7,7 +7,7 @@
 
 ToneMappingDrago03::ToneMappingDrago03()
 {
-	core = new OpenCLCore(this, "tonemapping/tone_mapping_drago_03.cl", "tone_mapping_drago_03");
+	core = new OpenCLCore(this, "tonemapping/tone_mapping_drago_03.cl", "tone_mapping_drago03");
 }
 
 ToneMappingDrago03::~ToneMappingDrago03()

@@ -5,12 +5,14 @@
 #include <string.h>
 
 #include "utils/Log.h"
+#include "utils/Consts.h"
 #include "utils/clUtil/OpenCLUtil.h"
 #include "image/fileformat/Radiance.h"
 #include "VectorADD.h"
 #include "image/ConversionRGB2RGBE.h"
 #include "image/ConversionRGBE2RGB.h"
 #include "tonemapping/LuminancePixel.h"
+#include "tonemapping/ToneMappingDrago03.h"
 
 
 
@@ -166,6 +168,39 @@ void testLuminancePixel()
 	printf("avLum=%f maxLum=%f\n", avLum, maxLum);
 }
 
+void testDrago03()
+{
+	Image *image = new Image();
+	image->setWidth(16);
+	image->setHeight(16);
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			if(x == 5 && y == 5) image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+		}
+	}
+	ToneMappingDrago03 *tone = new ToneMappingDrago03();
+	float avLum = 1;
+	float maxLum = 4567.45;
+	unsigned int *pic = new unsigned int[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	tone->toneMapping_Drago03(image, &avLum, &maxLum, pic, 0.85);
+
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			int pos = (y * image->getWidth() + x) * 3;
+			printf("%d %d %d ", pic[pos + 0], pic[pos + 1], pic[pos + 2]);
+		}
+		printf("\n");
+	}
+}
+
 int main(int argc, char **argv)
 {
 	//FILE *file = fopen("clocks.hdr", "r");
@@ -259,7 +294,8 @@ int main(int argc, char **argv)
 	/*VectorADD vector;
 	vector.start();*/
 
-	testLuminancePixel();
+	testDrago03();
+	//testLuminancePixel();
 	//testRGBE2RGB();
 	
 	printf("\n\nThe End\n\n");
