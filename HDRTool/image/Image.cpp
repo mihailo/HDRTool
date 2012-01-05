@@ -57,16 +57,16 @@ void Image::setHDR(float *newHDR)
 	image = newHDR;
 }
 
-guchar* Image::getPreviewImage()
+unsigned int* Image::getPreviewImage()
 {
 	if(previewImage == NULL)
 	{
-		previewImage = new guchar[height * width * RGB_NUM_OF_CHANNELS];
+		previewImage = new unsigned int[height * width * RGB_NUM_OF_CHANNELS];
 	}
 	return previewImage;
 }
 
-void Image::setPreviewImage(guchar *newPreviewImage)
+void Image::setPreviewImage(unsigned int *newPreviewImage)
 {
 	previewImage = newPreviewImage;
 }

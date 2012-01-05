@@ -10,7 +10,7 @@ private:
 	float exposure;
 
 	float *image;
-	guchar *previewImage;
+	unsigned int *previewImage;
 
 public:
 	Image(void);
@@ -29,6 +29,6 @@ public:
 	float* getHDR();
 	void setHDR(float *newHDR);
 
-	guchar* getPreviewImage();
-	void setPreviewImage(guchar *newPreviewImage);
+	unsigned int* getPreviewImage();
+	void setPreviewImage(unsigned int *newPreviewImage);
 };
