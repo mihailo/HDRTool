@@ -26,5 +26,5 @@ public:
 	void setFile(FILE *file);
 
 	void rgbe2rgb(const Trgbe_pixel rgbe, float exposure, float *r, float *g, float *b);
-	void  Radiance::rgb2rgbe( float r, float g, float b, Trgbe_pixel *rgbe);
+	void rgb2rgbe( float r, float g, float b, Trgbe_pixel *rgbe);
 };

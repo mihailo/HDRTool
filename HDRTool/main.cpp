@@ -13,6 +13,8 @@
 #include "image/ConversionRGBE2RGB.h"
 #include "tonemapping/LuminancePixel.h"
 #include "tonemapping/ToneMappingDrago03.h"
+#include "genhdr/GenerateHDRDebevec.h"
+#include "genhdr/Responses.h"
 
 
 
@@ -201,6 +203,56 @@ void testDrago03()
 	}
 }
 
+void testDebevec()
+{
+	Image *image = new Image();
+	image->setWidth(16);
+	image->setHeight(16);
+	unsigned int *ldr = new unsigned int[3 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			ldr[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			ldr[y * image->getWidth() * 3 + x * 3 + 1] = 1;
+			ldr[y * image->getWidth() * 3 + x * 3 + 2] = 1;
+			
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = 2;
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = 2;
+
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = 3;
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = 3;
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = 3;
+		}
+	}
+	
+	GenerateHDRDebevec *genHDR = new GenerateHDRDebevec();
+	float *arrayofexptime = new float[3];
+	float *Ir;
+	float *Ig;
+	float *Ib;
+	float *W;
+	int M;
+
+	int opt_bpp = 8; //info po pix	
+	//either 256(LDRs) or 65536 (RAW images, 16 bit tiffs).
+	M = (int) powf(2.0f,opt_bpp);
+	W = new float[M];
+	Responses *r = new Responses();
+	r->weights_triangle(W, M);
+	Ir = new float[M];
+	Ig = new float[M];
+	Ib = new float[M];
+	r->responseLinear(Ir, M);
+	r->responseLinear(Ig, M);
+	r->responseLinear(Ib, M);
+
+
+	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+}
+
 int main(int argc, char **argv)
 {
 	//FILE *file = fopen("clocks.hdr", "r");
@@ -294,7 +346,8 @@ int main(int argc, char **argv)
 	/*VectorADD vector;
 	vector.start();*/
 
-	testDrago03();
+	testDebevec();
+	//testDrago03();
 	//testLuminancePixel();
 	//testRGBE2RGB();
 	

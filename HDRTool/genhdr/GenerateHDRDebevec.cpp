@@ -17,7 +17,7 @@ GenerateHDRDebevec::~GenerateHDRDebevec()
 	delete core;
 }
 
-void GenerateHDRDebevec::generateHDR(Image *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int **ldr_img)
+void GenerateHDRDebevec::generateHDR(Image *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img)
 {
 	image = img;
 	
@@ -155,6 +155,7 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
 {
 	int height = image->getHeight();
 	int width = image->getWidth();
+	int N = num_ldr;
 	
 	cl_int ciErr1;				
 	// Set the Argument values
@@ -163,7 +164,7 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 1, 
 		sizeof(cl_int), (void*)&height);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 2, 
-		sizeof(cl_int), (void*)&num_ldr);
+		sizeof(cl_int), (void*)&N);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 3, 
 		sizeof(cl_mem), (void*)&cl_ldr_img);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 4, 

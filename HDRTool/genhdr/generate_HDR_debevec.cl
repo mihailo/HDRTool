@@ -5,12 +5,12 @@ float clamps( const float v, const float min, const float max )
   	return v;
 }
 __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const height,
-								   unsigned int N, unsigned int *cl_ldr_img,
-									float *cl_arrayofexptime, 
-									int *cl_i_lower, int *cl_i_upper, 
-									int maxM, int minM, float *cl_w, 
-									float *cl_Ir, float *cl_Ig, float *cl_Ib,
-									float *cl_hdr, unsigned int *cl_hdrpic)
+								   unsigned int N, __global unsigned int *cl_ldr_img,
+									__global float *cl_arrayofexptime, 
+									__global int *cl_i_lower, __global int *cl_i_upper, 
+									int maxM, int minM, __global float *cl_w, 
+									__global float *cl_Ir, __global float *cl_Ig, __global float *cl_Ib,
+									__global float *cl_hdr, __global unsigned int *cl_hdrpic)
 {
 	int i;
 	int y = get_global_id(0);
@@ -46,16 +46,16 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			int mB = cl_ldr_img[i * width * height * 3 + j * 3 + 2];
 			int mA = 255;// posto ga posle koristi !!!! int mA = qAlpha(* ( (QRgb*)( (listLDR->at(i) )->bits() ) + j ) );
 			
-			float ti = arrayofexptime_cuda[i];
+			float ti = cl_arrayofexptime[i];
 			// --- anti ghosting: monotonous increase in time should result
 			// in monotonous increase in intensity; make forward and
 			// backward check, ignore value if condition not satisfied
-			int R_lower = cl_ldr_img[i_lower_cuda[i] * width * height * 3 + j * 3 + 0];//qRed  (* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
-			int R_upper = cl_ldr_img[i_upper_cuda[i] * width * height * 3 + j * 3 + 0];//qRed  (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
-			int G_lower = cl_ldr_img[i_lower_cuda[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
-			int G_upper = cl_ldr_img[i_upper_cuda[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
-			int B_lower = cl_ldr_img[i_lower_cuda[i] * width * height * 3 + j * 3 + 2];//qBlue (* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
-			int B_upper = cl_ldr_img[i_upper_cuda[i] * width * height * 3 + j * 3 + 3];//qBlue (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
+			int R_lower = cl_ldr_img[cl_i_lower[i] * width * height * 3 + j * 3 + 0];//qRed  (* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
+			int R_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 0];//qRed  (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
+			int G_lower = cl_ldr_img[cl_i_lower[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
+			int G_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
+			int B_lower = cl_ldr_img[cl_i_lower[i] * width * height * 3 + j * 3 + 2];//qBlue (* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
+			int B_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 3];//qBlue (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
 
 			//if at least one of the color channel's values are in the bright "not-trusted zone" and we have min exposure time
 			if ((mR > maxM || mG > maxM || mB > maxM) && (ti < minti))
@@ -139,9 +139,9 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			cl_hdr[j * 3 + 1] = sumG/divG;
 			cl_hdr[j * 3 + 2] = sumB/divB;
 
-			cl_hdrpic[j * 3 + 0] = (guchar)clamps(cl_hdr[j * 3 + 0], 0.0f, 255.0f);
-			cl_hdrpic[j * 3 + 1] = (guchar)clamps(cl_hdr[j * 3 + 1], 0.0f, 255.0f);
-			cl_hdrpic[j * 3 + 2] = (guchar)clamps(cl_hdr[j * 3 + 2], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 0] = (unsigned int)clamps(cl_hdr[j * 3 + 0], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 1] = (unsigned int)clamps(cl_hdr[j * 3 + 1], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 2] = (unsigned int)clamps(cl_hdr[j * 3 + 2], 0.0f, 255.0f);
 		}
 		else
 		{
