@@ -9,6 +9,14 @@ Image::Image(void)
 	previewImage = NULL;
 }
 
+Image::Image(unsigned int h, unsigned int w)
+{
+	image = NULL;
+	previewImage = NULL;
+	height = h;
+	width = w;
+}
+
 Image::~Image(void)
 {
 }
@@ -69,4 +77,19 @@ unsigned int* Image::getPreviewImage()
 void Image::setPreviewImage(unsigned int *newPreviewImage)
 {
 	previewImage = newPreviewImage;
+}
+
+void Image::fill(float r, float g, float b)
+{
+	float * hdr_img = getHDR();
+	unsigned int x,y;
+	for(y = 0; y < height; y++)
+	{
+		for(x = 0; x < width; x++)
+		{
+			hdr_img[(y * width + x) * RGB_NUM_OF_CHANNELS + 0] = r;
+			hdr_img[(y * width + x) * RGB_NUM_OF_CHANNELS + 1] = g;
+			hdr_img[(y * width + x) * RGB_NUM_OF_CHANNELS + 2] = b;
+		}
+	}
 }

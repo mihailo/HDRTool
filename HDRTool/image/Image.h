@@ -14,6 +14,7 @@ private:
 
 public:
 	Image(void);
+	Image(unsigned int h, unsigned int w);
 	~Image(void);
 
 	
@@ -31,4 +32,6 @@ public:
 
 	unsigned int* getPreviewImage();
 	void setPreviewImage(unsigned int *newPreviewImage);
+
+	void fill(float r, float g, float b);
 };

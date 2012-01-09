@@ -129,14 +129,15 @@ void Radiance::readRadianceData(Image *image)
 	// read image
 	// depending on format read either rle or normal (note: only rle supported)
 	Trgbe* scanline = new Trgbe[image->getWidth() * 4]; // calloc(image->getWidth() * 4, sizeof( Trgbe )); 
-	Trgbe_pixel* pic = new Trgbe_pixel[image->getWidth() * image->getHeight()]; //malloc(image->getWidth() * image->getHeight() * sizeof(Trgbe_pixel));
+	Trgbe_pixel* img_rgbe = new Trgbe_pixel[image->getWidth() * image->getHeight()]; //malloc(image->getWidth() * image->getHeight() * sizeof(Trgbe_pixel));
     
-	int y = 0;
+	unsigned int y = 0;
 	for( y = 0 ; y < image->getHeight(); y++ )
 	{
 		// read rle header
 		printf("read line: %d \n", y);
 		Trgbe header[4];
+		printf("%d %d \n", sizeof(header), sizeof(Trgbe));
 		fread(header, sizeof(header), 1, imageFile);
 		if( header[0] != 2 || header[1] != 2 || (header[2]<<8) + header[3] != image->getWidth() )
 		{
@@ -154,13 +155,16 @@ void Radiance::readRadianceData(Image *image)
 			scanline[3]=header[3];
 			
 			//--- write scanline to the image
-			int x = 0;
+			unsigned int x = 0;
 			for( x = 0 ; x < image->getWidth(); x++ )
 			{
-				pic[y * image->getWidth() + x].r = scanline[4 * x + 0];
-				pic[y * image->getWidth() + x].g = scanline[4 * x + 1];
-				pic[y * image->getWidth() + x].b = scanline[4 * x + 2];
-				pic[y * image->getWidth() + x].e = scanline[4 * x + 3];
+				Trgbe_pixel rgbe;
+				rgbe.r = scanline[4 * x + 0];
+				rgbe.g = scanline[4 * x + 1];
+				rgbe.b = scanline[4 * x + 2];
+				rgbe.e = scanline[4 * x + 3];
+
+				img_rgbe[y * image->getWidth() + x] = rgbe;
 			}
 		}
 		else
@@ -174,14 +178,16 @@ void Radiance::readRadianceData(Image *image)
 			}
 			//--- write scanline to the image
 			
-			int x = 0;
+			unsigned int x = 0;
 			for( x = 0 ; x < image->getWidth(); x++ )
 			{
 				Trgbe_pixel rgbe;
-				pic[y * image->getWidth() + x].r = scanline[x + image->getWidth() * 0];
-				pic[y * image->getWidth() + x].g = scanline[x + image->getWidth() * 1];
-				pic[y * image->getWidth() + x].b = scanline[x + image->getWidth() * 2];
-				pic[y * image->getWidth() + x].e = scanline[x + image->getWidth() * 3];
+				rgbe.r = scanline[x + image->getWidth() * 0];
+				rgbe.g = scanline[x + image->getWidth() * 1];
+				rgbe.b = scanline[x + image->getWidth() * 2];
+				rgbe.e = scanline[x + image->getWidth() * 3];
+				
+				img_rgbe[y * image->getWidth() + x] = rgbe;
 				//printf("%d ", scanline[x + image->getWidth() * 3]);
 				//printf("%d %d %d %d | ", scanline[x + image->getWidth() * 0], scanline[x + image->getWidth() * 1], 
 				//	scanline[x + image->getWidth() * 2], scanline[x + image->getWidth() * 3]);
@@ -196,13 +202,13 @@ void Radiance::readRadianceData(Image *image)
 	
 	for(y = 0; y < image->getHeight(); y++)
 	{
-		int x;
+		unsigned int x;
 		for(x = 0; x < image->getWidth(); x++)
 		{
 			float r = -134;
 			float g = -134;
 			float b = -134;
-			rgbe2rgb(pic[y * image->getWidth() + x], image->getExposure(), &r, &g, &b);
+			rgbe2rgb(img_rgbe[y * image->getWidth() + x], image->getExposure(), &r, &g, &b);
 			
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = r;
 			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = g;
@@ -222,13 +228,14 @@ void Radiance::readRadianceData(Image *image)
 	//addTime("convert rgbe to rgb: ", time);
 	//destroyStopwatch();
 	
-	delete[] pic;
+	delete[] img_rgbe;
 	delete[] scanline;
 }
 
 void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 {
 	int peek = 0;
+	printf("%d\n", sizeof(*scanline));
 	while( peek < size )
 	{
 		Trgbe p[2];
@@ -384,7 +391,7 @@ void Radiance::writeFile(Image *image)
 	
 	//creatStopwatch();
 	//int timer_id = startStopwatch();
-	int x,y;
+	unsigned int x,y;
 	for(y = 0; y < image->getHeight(); y++)
 	{
 		for(x = 0; x < image->getWidth(); x++)

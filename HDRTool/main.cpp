@@ -253,13 +253,17 @@ void testDebevec()
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
 }
 
-int main(int argc, char **argv)
+void testFile()
 {
-	//FILE *file = fopen("clocks.hdr", "r");
-	/*FILE *file = fopen("proba_cuda1.hdr", "r");
+	/*FILE *file = fopen("clocks.hdr", "r");
+	//FILE *file = fopen("proba_cuda1.hdr", "r");
 	Radiance *radiance = new Radiance(file);
-	Image *image = radiance->readFile();*/
-
+	Image *image = radiance->readFile();
+	printf("exposure: %f\n", image->getExposure());
+	printf("height: %d\n", image->getHeight());
+	printf("width: %d\n", image->getWidth());
+	fclose(file);
+*/
 /*	Image *image = new Image();
 	image->setExposure(1.1);
 	image->setHeight(2);
@@ -291,23 +295,18 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("\n");
-//	int i,j;
-	for(i=0; i<2; i++)
-	{
-		for(j=0; j<150; j++)
-		{
-			printf("%f %f %f | ", image->getHDR()[i*150*3 + j*3 + 0],
-				image->getHDR()[i*150*3 + j*3 + 1],
-			image->getHDR()[i*150*3 + j*3 + 2]);
-		}
-		printf("\n");
-	}*/
+	
 
-	/*printf("exposure: %f\n", image->getExposure());
+	*/
+	FILE *file = fopen("proba_cuda1.hdr", "r");
+	Radiance *radiance = new Radiance(file);
+	Image *image = radiance->readFile();
+	printf("exposure: %f\n", image->getExposure());
 	printf("height: %d\n", image->getHeight());
 	printf("width: %d\n", image->getWidth());
-	fclose(file);*/
+	fclose(file);
+
+
 	/*FILE *output = NULL;
 	output = fopen("test1.hdr", "w");
 	if (!output)perror("fopen");
@@ -315,14 +314,14 @@ int main(int argc, char **argv)
 	{
 		printf("NULL");
 	}
-	Radiance *radiance = new Radiance(output);
+	//Radiance *radiance = new Radiance(output);
 	radiance->setFile(output);
 	radiance->writeFile(image);
-	fclose(output);
-*/
+	fclose(output);*/
+
 	//delete radiance;
 
-/*	Radiance *rad = new Radiance(output);
+	/*Radiance *rad = new Radiance(output);
 
 	Trgbe_pixel * pixel = new Trgbe_pixel();
 	pixel->r = 2;
@@ -335,6 +334,10 @@ int main(int argc, char **argv)
 	printf("%f %f %f\n", r, g, b);
 		
 	rad->rgb2rgbe(r,g,b,pixel);
+	unsigned int r_int = pixel->r;
+	unsigned int g_int = pixel->g;
+	unsigned int b_int = pixel->b;
+	unsigned int e_int = pixel->e;
 	printf("%d %d %d %d\n", pixel->r, pixel->g, pixel->b, pixel->e);
 
 	rad->rgbe2rgb(*pixel, 1.0, &r, &g, &b);
@@ -342,11 +345,12 @@ int main(int argc, char **argv)
 
 	rad->rgb2rgbe(r,g,b,pixel);
 	printf("%d %d %d %d\n", pixel->r, pixel->g, pixel->b, pixel->e);*/
+}
 
-	/*VectorADD vector;
-	vector.start();*/
-
-	testDebevec();
+int main(int argc, char **argv)
+{
+	testFile();
+	//testDebevec();
 	//testDrago03();
 	//testLuminancePixel();
 	//testRGBE2RGB();
