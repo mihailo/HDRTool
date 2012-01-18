@@ -1,20 +1,25 @@
-#pragma once
+#ifndef _IMAGE_H_
+#define _IMAGE_H_
+
 #include "Data.h"
 
+template <class Type>
 class Image
 {
 private:
+	unsigned int num_of_channels;
+
 	unsigned int height;
 	unsigned int width;
 
 	float exposure;
 
-	float *image;
+	Type *image;
 	unsigned int *previewImage;
 
 public:
-	Image(void);
-	Image(unsigned int h, unsigned int w);
+	Image(unsigned int num_channels);
+	Image(unsigned int num_channels, unsigned int h, unsigned int w);
 	~Image(void);
 
 	
@@ -27,11 +32,15 @@ public:
 	float getExposure();
 	void setExposure(float newExposure);
 
-	float* getHDR();
-	void setHDR(float *newHDR);
+	Type* getImage();
+	void setImage(Type *image);
 
 	unsigned int* getPreviewImage();
 	void setPreviewImage(unsigned int *newPreviewImage);
 
-	void fill(float r, float g, float b);
+	Image* scaled(unsigned int h, unsigned int w);
+	void fill(Type r, Type g, Type b);
+	void fill(Type g);
 };
+
+#endif

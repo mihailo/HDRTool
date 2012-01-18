@@ -23,15 +23,15 @@ void Radiance::setFile(FILE *file)
 	imageFile = file;
 }
 
-Image* Radiance::readFile()
+Image<float>* Radiance::readFile()
 {
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	readRadianceHeader(image);
 	readRadianceData(image);
 	return image;
 }
 
-void Radiance::readRadianceHeader(Image *image)
+void Radiance::readRadianceHeader(Image<float> *image)
 {
 	printf("RGBE: reading header...\n");
 	// read header information
@@ -124,7 +124,7 @@ void  Radiance::rgbe2rgb(const Trgbe_pixel rgbe, float exposure, float *r, float
 		*r = *g = *b = 0.f;
 }
 
-void Radiance::readRadianceData(Image *image)
+void Radiance::readRadianceData(Image<float> *image)
 {
 	// read image
 	// depending on format read either rle or normal (note: only rle supported)
@@ -210,9 +210,9 @@ void Radiance::readRadianceData(Image *image)
 			float b = -134;
 			rgbe2rgb(img_rgbe[y * image->getWidth() + x], image->getExposure(), &r, &g, &b);
 			
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = r;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = g;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = b;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = r;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = g;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = b;
 
 			//printf("%f %f %f | ", r, g, b);
 			
@@ -366,7 +366,7 @@ void  Radiance::rgb2rgbe( float r, float g, float b, Trgbe_pixel *rgbe)
 	}
 }
 
-void Radiance::writeFile(Image *image)
+void Radiance::writeFile(Image<float> *image)
 {
 	// header information
 	fprintf(imageFile, "#?RADIANCE\n");  // file format specifier
@@ -397,9 +397,9 @@ void Radiance::writeFile(Image *image)
 		for(x = 0; x < image->getWidth(); x++)
 		{
 			Trgbe_pixel p;
-			rgb2rgbe(image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0], 
-				image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1], 
-				image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2], &p);
+			rgb2rgbe(image->getImage()[y * image->getWidth() * 3 + x * 3 + 0], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2], &p);
 			scanlineR[y * image->getWidth() + x] = p.r;
 			scanlineG[y * image->getWidth() + x] = p.g;
 			scanlineB[y * image->getWidth() + x] = p.b;

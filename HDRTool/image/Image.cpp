@@ -1,87 +1,105 @@
 #include "Image.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../utils/Consts.h"
-Image::Image(void)
+
+template <class Type>
+Image<Type>::Image(unsigned int num_channels)
 {
+	num_of_channels = num_channels;
 	image = NULL;
 	previewImage = NULL;
 }
 
-Image::Image(unsigned int h, unsigned int w)
+template <class Type>
+Image<Type>::Image(unsigned int num_channels, unsigned int h, unsigned int w)
 {
+	num_of_channels = num_channels;
 	image = NULL;
 	previewImage = NULL;
 	height = h;
 	width = w;
 }
 
-Image::~Image(void)
+template <class Type>
+Image<Type>::~Image(void)
 {
 }
 
-unsigned int Image::getHeight()
+template <class Type>
+unsigned int Image<Type>::getHeight()
 {
 	return height;
 }
 
-void Image::setHeight(unsigned int newHeight)
+template <class Type>
+void Image<Type>::setHeight(unsigned int newHeight)
 {
 	height = newHeight;
 }
 	
-unsigned int Image::getWidth()
+template <class Type>
+unsigned int Image<Type>::getWidth()
 {
 	return width;
 }
 
-void Image::setWidth(unsigned int newWidth)
+template <class Type>
+void Image<Type>::setWidth(unsigned int newWidth)
 {
 	width = newWidth;
 }
 
-float Image::getExposure()
+template <class Type>
+float Image<Type>::getExposure()
 {
 	return exposure;
 }
 
-void Image::setExposure(float newExposure)
+template <class Type>
+void Image<Type>::setExposure(float newExposure)
 {
 	exposure = newExposure;
 }
 
-float* Image::getHDR()
+template <class Type>
+Type* Image<Type>::getImage()
 {
 	if(image == NULL)
 	{
-		image = new float[height * width * RGB_NUM_OF_CHANNELS];
+		image = new Type[height * width * num_of_channels];
 	}
 	return image;
 }
 
-void Image::setHDR(float *newHDR) 
+template <class Type>
+void Image<Type>::setImage(Type *newHDR) 
 {
 	image = newHDR;
 }
 
-unsigned int* Image::getPreviewImage()
+template <class Type>
+unsigned int* Image<Type>::getPreviewImage()
 {
 	if(previewImage == NULL)
 	{
-		previewImage = new unsigned int[height * width * RGB_NUM_OF_CHANNELS];
+		previewImage = new unsigned int[height * width * num_of_channels];
 	}
 	return previewImage;
 }
 
-void Image::setPreviewImage(unsigned int *newPreviewImage)
+template <class Type>
+void Image<Type>::setPreviewImage(unsigned int *newPreviewImage)
 {
 	previewImage = newPreviewImage;
 }
 
-void Image::fill(float r, float g, float b)
+template <class Type>
+void Image<Type>::fill(Type r, Type g, Type b)
 {
-	float * hdr_img = getHDR();
+	Type * hdr_img = getImage();
 	unsigned int x,y;
 	for(y = 0; y < height; y++)
 	{
@@ -93,3 +111,19 @@ void Image::fill(float r, float g, float b)
 		}
 	}
 }
+
+template <class Type>
+void Image<Type>::fill(Type g)
+{
+}
+
+template <class Type>
+Image<Type>* Image<Type>::scaled(unsigned int h, unsigned int w)
+{
+	Image<Type> *img;
+	return img;
+}
+	
+
+template class Image<float>;
+template class Image<unsigned char>;

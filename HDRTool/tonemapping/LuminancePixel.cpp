@@ -15,7 +15,7 @@ LuminancePixel::~LuminancePixel()
 	delete core;
 }
 
-void LuminancePixel::calculate_luminance_pixel(Image *img, 
+void LuminancePixel::calculate_luminance_pixel(Image<float> *img, 
 					 float *avLum, float *maxLum)
 {
 	image = img;
@@ -94,7 +94,7 @@ void LuminancePixel::setInputDataToOpenCLMemory()
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
-		size, image->getHDR(), 0, NULL, NULL);
+		size, image->getImage(), 0, NULL, NULL);
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

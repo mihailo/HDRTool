@@ -9,8 +9,8 @@ class Radiance {
 private:
 	FILE *imageFile;
 	
-	void readRadianceHeader(Image *image);
-	void readRadianceData(Image *image);
+	void readRadianceHeader(Image<float> *image);
+	void readRadianceData(Image<float> *image);
 	void RLERead(Trgbe* scanline, int size);
 
 	int RLEWrite(Trgbe* scanline, int size);
@@ -20,8 +20,8 @@ public:
 	~Radiance();
 
 
-	Image* readFile();
-	void writeFile(Image *image);
+	Image<float>* readFile();
+	void writeFile(Image<float> *image);
 
 	void setFile(FILE *file);
 

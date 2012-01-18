@@ -15,7 +15,7 @@ ToneMappingDrago03::~ToneMappingDrago03()
 	delete core;
 }
 
-void ToneMappingDrago03::toneMapping_Drago03(Image *img, float *avLum, float *maxLum, unsigned int *pic, float bias)
+void ToneMappingDrago03::toneMapping_Drago03(Image<float> *img, float *avLum, float *maxLum, unsigned int *pic, float bias)
 {
 	image = img;
 	picture = pic;
@@ -97,7 +97,7 @@ void ToneMappingDrago03::setInputDataToOpenCLMemory()
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
-		size, image->getHDR(), 0, NULL, NULL);
+		size, image->getImage(), 0, NULL, NULL);
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

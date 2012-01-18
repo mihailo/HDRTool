@@ -11,7 +11,7 @@ class GenerateHDRDebevec:public OpenClComputeUnit
 private:
 	OpenCLCore *core;
 
-	Image *image;
+	Image<float> *image;
 	int *i_lower, *i_upper;
 	float * array_of_exp_time;
 	float *ir, *ig, *ib;
@@ -37,7 +37,7 @@ public:
 	void getDataFromOpenCLMemory();
 	void clearDeviceMemory();
 
-	void generateHDR(Image *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img);
+	void generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img);
 
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	

@@ -11,7 +11,7 @@ class ToneMappingDrago03:public OpenClComputeUnit
 private:
 	OpenCLCore *core;
 
-	Image *image;
+	Image<float> *image;
 	unsigned int *picture;
 	float *avLuminance, *maxLuminance;
 	float normMaxLum;
@@ -31,7 +31,7 @@ public:
 	void getDataFromOpenCLMemory();
 	void clearDeviceMemory();
 
-	void toneMapping_Drago03(Image *image, float *avLum, float *maxLum, unsigned int *picture, float bias);
+	void toneMapping_Drago03(Image<float> *image, float *avLum, float *maxLum, unsigned int *picture, float bias);
 
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	

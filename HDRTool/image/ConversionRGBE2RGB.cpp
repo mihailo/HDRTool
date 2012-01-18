@@ -20,7 +20,7 @@ void ConversionRGBE2RGB::convertRGBE2RGB(
 					 unsigned int *g, 
 					 unsigned int *b, 
 					 unsigned int *e,
-					 Image *img)
+					 Image<float> *img)
 {
 	image = img;
 
@@ -132,7 +132,7 @@ void ConversionRGBE2RGB::getDataFromOpenCLMemory()
 	
 	// Synchronous/blocking read of results, and check accumulated errors
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
-		size, image->getHDR(), 0, NULL, NULL);
+		size, image->getImage(), 0, NULL, NULL);
     logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

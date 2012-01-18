@@ -12,7 +12,7 @@ class LuminancePixel:public OpenClComputeUnit
 private:
 	OpenCLCore *core;
 
-	Image *image;
+	Image<float> *image;
 	float *avLuminance,	*maxLuminance;
 	float *avLumArray, *maxLumArray;
 	
@@ -31,7 +31,7 @@ public:
 	void getDataFromOpenCLMemory();
 	void clearDeviceMemory();
 
-	void calculate_luminance_pixel(Image *img, float *avLum, float *maxLum);
+	void calculate_luminance_pixel(Image<float> *img, float *avLum, float *maxLum);
 
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	

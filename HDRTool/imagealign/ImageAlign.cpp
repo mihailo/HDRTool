@@ -1,9 +1,10 @@
 #include "ImageAlign.h"
 
-
+#include <math.h>
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
 #include "../image/Image.h"
+#include <iso646.h>
 
 ImageAlign::ImageAlign(void)
 {
@@ -16,9 +17,9 @@ ImageAlign::~ImageAlign(void)
 
 
 
-Image* ImageAlign::shiftQImage(Image *in, int dx, int dy)
+Image<unsigned char>* ImageAlign::shiftQImage(Image<unsigned char> *in, int dx, int dy)
 {
-	Image *out=new Image(in->getHeight(), in->getWidth());
+	Image<unsigned char> *out=new Image<unsigned char>(3, in->getHeight(), in->getWidth());
 	out->fill(0,0,0); //transparent black
 	unsigned int i;
 	for(i = 0; i < in->getHeight(); i++) 
@@ -34,12 +35,12 @@ Image* ImageAlign::shiftQImage(Image *in, int dx, int dy)
 			if( (j+dx) >= 0 ) 
 			{
 				//outp[j+dx] = *inp;
-				out->getHDR()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
-					+ (j + dx) * RGB_NUM_OF_CHANNELS + 0] = in->getHDR()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 0];
-				out->getHDR()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
-					+ (j + dx) * RGB_NUM_OF_CHANNELS + 1] = in->getHDR()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 1];
-				out->getHDR()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
-					+ (j + dx) * RGB_NUM_OF_CHANNELS + 2] = in->getHDR()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 2];
+				out->getImage()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
+					+ (j + dx) * RGB_NUM_OF_CHANNELS + 0] = in->getImage()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 0];
+				out->getImage()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
+					+ (j + dx) * RGB_NUM_OF_CHANNELS + 1] = in->getImage()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 1];
+				out->getImage()[(i + dy) * in->getWidth() * RGB_NUM_OF_CHANNELS 
+					+ (j + dx) * RGB_NUM_OF_CHANNELS + 2] = in->getImage()[i * in->getWidth() * RGB_NUM_OF_CHANNELS + j * RGB_NUM_OF_CHANNELS + 2];
 			}
 			//inp++;
 		}
@@ -47,12 +48,13 @@ Image* ImageAlign::shiftQImage(Image *in, int dx, int dy)
 	return out;
 }
 
-void ImageAlign::mtb_alignment(int num_of_image, Image **ImagePtrList, bool **ldr_tiff_input) {
+void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtrList, bool **ldr_tiff_input) 
+{
 	int width = ImagePtrList[0]->getWidth();
 	int height = ImagePtrList[0]->getHeight();
 	double quantile = 0.5;
 	int noise = 4;
-	int shift_bits = qMax((int)floor(log2(qMin(width, height)))-6 , 0);
+	int shift_bits = max((int)floor(log((double)min(width, height)) / log((double)2)) - 6 , 0); //calculate log for base 2 log( n ) / log( 2 ); 
 	logFile("::mtb_alignment: width=%d, height=%d, shift_bits=%d", width, height, shift_bits);
 
 	//these arrays contain the shifts of each image (except the 0-th) wrt the previous one
@@ -80,29 +82,30 @@ void ImageAlign::mtb_alignment(int num_of_image, Image **ImagePtrList, bool **ld
 			logFile("::mtb_alignment: partial cumulativeX=%d, cumulativeY=%d", cumulativeX, cumulativeY);
 		}
 		logFile("::mtb_alignment: Cumulative shift for image %d = (%d,%d)",i,cumulativeX,cumulativeY);
-		Image *shifted=shiftQImage(ImagePtrList[1], cumulativeX, cumulativeY);
-		if (ldr_tiff_input[1]) 
+		Image<unsigned char> *shifted=shiftQImage(ImagePtrList[1], cumulativeX, cumulativeY);
+		/*if (ldr_tiff_input[1]) 
 		{
 			delete [] ImagePtrList[1]->bits();
-		}
-		delete ImagePtrList[1];
+		}*/
+		//result
+		/*delete ImagePtrList[1];
 		ImagePtrList.removeAt(1);
 		ImagePtrList.append(shifted);
 		ldr_tiff_input.removeAt(1);
-		ldr_tiff_input.append(false);
+		ldr_tiff_input.append(false);*/
 	}
 	delete shiftsX; 
 	delete shiftsY;
 }
 
 
-void ImageAlign::mtbalign(const Image *image1, const Image *image2,
+void ImageAlign::mtbalign(Image<unsigned char> *image1, Image<unsigned char> *image2,
               const double quantile, const int noise, const int shift_bits,
               int &shift_x, int &shift_y)
 {
-	Image *img1lum=new Image(image1->size(),QImage::Format_Indexed8);
-	Image *img2lum=new Image(image2->size(),QImage::Format_Indexed8);
-	vector<double> cdf1,cdf2;
+	Image<unsigned char> *img1lum=new Image<unsigned char>(1, image1->getHeight(), image1->getWidth());//QImage::Format_Indexed8);
+	Image<unsigned char> *img2lum=new Image<unsigned char>(1, image2->getHeight(), image2->getWidth());//QImage::Format_Indexed8);
+	double cdf1[256], cdf2[256];
 	int median1,median2;
 
 	getLum(image1, img1lum, cdf1);
@@ -119,31 +122,31 @@ void ImageAlign::mtbalign(const Image *image1, const Image *image2,
 	logFile("::mtb_alignment: align::done, final shift is (%d,%d)",shift_x, shift_y);
 }
 
-void ImageAlign::getExpShift(const Image *img1, const int median1, 
-		 const Image *img2, const int median2, 
+void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1, 
+		 Image<unsigned char> *img2, const int median2, 
 		 const int noise, const int shift_bits, 
 		 int &shift_x, int &shift_y)
 {
 	int curr_x = 0;
 	int curr_y = 0;
 	if( shift_bits > 0) {
-		Image img1small = img1->scaled(img1->size()/2);
-		Image img2small = img2->scaled(img2->size()/2);
-		getExpShift(&img1small,median1, &img2small, median2, noise, shift_bits-1, curr_x, curr_y);
+		Image<unsigned char> *img1small = img1->scaled(img1->getHeight() / 2, img1->getWidth() / 2);
+		Image<unsigned char> *img2small = img2->scaled(img2->getHeight() / 2, img2->getWidth() / 2);
+		getExpShift(img1small, median1, img2small, median2, noise, shift_bits-1, curr_x, curr_y);
 		curr_x *= 2;
 		curr_y *= 2;
 	}
 	
-	Image *img1threshold = setbitmap(img1->size());
-	Image *img1mask      = setbitmap(img1->size());
-	Image *img2threshold = setbitmap(img1->size());
-	Image *img2mask      = setbitmap(img1->size());
+	Image<unsigned char> *img1threshold = setbitmap(img1->getHeight(), img1->getWidth());
+	Image<unsigned char> *img1mask      = setbitmap(img1->getHeight(), img1->getWidth());
+	Image<unsigned char> *img2threshold = setbitmap(img1->getHeight(), img1->getWidth());
+	Image<unsigned char> *img2mask      = setbitmap(img1->getHeight(), img1->getWidth());
 	setThreshold(img1, median1, noise, img1threshold, img1mask);
 	setThreshold(img2, median2, noise, img2threshold, img2mask);
 	
-	Image *img2th_shifted   = setbitmap(img2->size());
-	Image *img2mask_shifted = setbitmap(img2->size());
-	Image *diff             = setbitmap(img2->size());
+	Image<unsigned char> *img2th_shifted   = setbitmap(img2->getHeight(), img2->getWidth());
+	Image<unsigned char> *img2mask_shifted = setbitmap(img2->getHeight(), img2->getWidth());
+	Image<unsigned char> *diff             = setbitmap(img2->getHeight(), img2->getWidth());
 
 	int minerr = img1->getWidth() * img2->getHeight();
 	for(int i = -1; i <= 1; i++) 
@@ -175,112 +178,124 @@ void ImageAlign::getExpShift(const Image *img1, const int median1,
 	return;
 }
 
-void ImageAlign::shiftimage(Image *in, const int dx, const int dy, Image *out)
+void ImageAlign::shiftimage(Image<unsigned char> *in, const int dx, const int dy, Image<unsigned char> *out)
 {
+	//obe su kao grayscale
 	out->fill(0);
-	for(int i = 0; i < in->getHeight(); i++) {
+	unsigned int i;
+	for(i = 0; i < in->getHeight(); i++) {
 		if( (i+dy) < 0 ) continue;
 		if( (i+dy) >= in->getHeight()) break;
-		const uchar *inp = in->scanLine(i);
-		uchar *outp = out->scanLine(i+dy);
-		for(int j = 0; j < in->getWidth(); j++) 
+		//const unsigned char *inp = in->scanLine(i);
+		//unsigned char *outp = out->scanLine(i+dy);
+		unsigned int j;
+		for(j = 0; j < in->getWidth(); j++) 
 		{
 			if( (j+dx) >= in->getWidth()) break;
-			if( (j+dx) >= 0 ) outp[j+dx] = *inp;
-			inp++;
+			if( (j+dx) >= 0 ) out->getImage()[i * in->getWidth() + j + dx] = in->getImage()[i * in->getWidth() + j]; //outp[j+dx] = *inp;
+			//inp++;
 		}
 	}
 	return;
 }
 
-void ImageAlign::setThreshold(const Image *in, const int threshold, const int noise,
-			Image *threshold_out, QImage *mask_out)
+void ImageAlign::setThreshold(Image<unsigned char> *in, const int threshold, const int noise,
+			Image<unsigned char> *threshold_out, Image<unsigned char> *mask_out)
 {
-	for(int i = 0; i < in->getHeight(); i++) 
+	unsigned int i;
+	for(i = 0; i < in->getHeight(); i++) 
 	{
-		const uchar *inp = in->scanLine(i);
-		uchar *outp = threshold_out->scanLine(i);
-		uchar *maskp = mask_out->scanLine(i);
-		for(int j = 0; j < in->getWidth(); j++) 
+		//const unsigned char *inp = in->scanLine(i);
+		//unsigned char *outp = threshold_out->scanLine(i);
+		//unsigned char *maskp = mask_out->scanLine(i);
+		unsigned int j;
+		for(j = 0; j < in->getWidth(); j++) 
 		{
-			*outp++ = *inp < threshold ? 0 : 1;
-			*maskp++ = (*inp > (threshold-noise)) && (*inp < (threshold+noise)) ? 0 : 1;
-			inp++;
+			threshold_out->getImage()[i * threshold_out->getWidth() + j] = 
+				in->getImage()[i * threshold_out->getWidth() + j] < threshold ? 0 : 1;//*outp++ = *inp < threshold ? 0 : 1;
+			mask_out->getImage()[i * threshold_out->getWidth() + j] = 
+				(in->getImage()[i * threshold_out->getWidth() + j] > (threshold-noise)) && (in->getImage()[i * threshold_out->getWidth() + j] < (threshold+noise)) ? 0 : 1;
+			//inp++;
 		}
 	}
 	return;
 }
 
-void ImageAlign::XORimages(const Image *img1, const Image *mask1, const Image *img2, const Image *mask2, Image *diff)
+void ImageAlign::XORimages(Image<unsigned char> *img1, Image<unsigned char> *mask1, Image<unsigned char> *img2, Image<unsigned char> *mask2, Image<unsigned char> *diff)
 {
 	diff->fill(0);
-	for(int i = 0; i < img1->height(); i++) 
+	unsigned int i;
+	for(i = 0; i < img1->getHeight(); i++) 
 	{
-		const uchar *p1 = img1->scanLine(i);
-		const uchar *p2 = img2->scanLine(i);
-		const uchar *m1 = mask1->scanLine(i);
-		const uchar *m2 = mask2->scanLine(i);
-		uchar *dp = diff->scanLine(i);
-		for(int j = 0; j < img1->width(); j++) {
+		//const unsigned char *p1 = img1->scanLine(i);
+		//const unsigned char *p2 = img2->scanLine(i);
+		//const unsigned char *m1 = mask1->scanLine(i);
+		//const unsigned char *m2 = mask2->scanLine(i);
+		//unsigned char *dp = diff->scanLine(i);
+		unsigned int j;
+		for(j = 0; j < img1->getWidth(); j++) {
 			//*dp++ = xor_t[*p1++][*p2++]*(*m1++)*(*m2++);
-			*dp++ = (*p1++ xor *p2++) and *m1++ and *m2++;
+			diff->getImage()[i * img1->getWidth() + j] = (img1->getImage()[i * img1->getWidth() + j] xor img2->getImage()[i * img1->getWidth() + j]) 
+				and mask1->getImage()[i * img1->getWidth() + j] and mask2->getImage()[i * img1->getWidth() + j]; //*dp++ = (*p1++ xor *p2++) and *m1++ and *m2++;
 		}
 	}
 	return;
 }
 
-long ImageAlign::sumimage(const Image *img)
+long ImageAlign::sumimage(Image<unsigned char> *img)
 {
 	long ttl  = 0;
-	for(int i = 0; i < img->getHeight(); i++) 
+	unsigned int i;
+	for(i = 0; i < img->getHeight(); i++) 
 	{
-		const uchar *p = img->scanLine(i);
-		for(int j = 0; j < img->getWidth(); j++) 
-			ttl += (long)(*p++);
+		//const unsigned char *p = img->scanLine(i);
+		unsigned int j;
+		for(j = 0; j < img->getWidth(); j++) 
+			ttl += (long)(img->getImage()[i * img->getWidth() + j]);
 	}
 	return ttl;
 }
 
-void ImageAlign::getLum(const Image *in, Image *out, vector<double> &cdf)
+void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, double *cdf)
 {
-	vector<long> hist;
-	hist.resize(256);
-	unsigned int i;
+	//in je rgb, out je gray
+	long hist[256];
+	unsigned int i, j;
 	for(i = 0; i < 256; i++) hist[i] = 0;
-
-	cdf.resize(256);
 	
-	QVector<QRgb> graycolortable;
+	//QVector<QRgb> graycolortable;
 	
-	for(i = 0; i < 256; i++)
-		graycolortable.append(qRgb(i,i,i));
-	out->setColorTable(graycolortable);
+	//for(i = 0; i < 256; i++)
+	//	graycolortable.append(qRgb(i,i,i));
+	//out->setColorTable(graycolortable);
 	
-	for(int i = 0; i < in->getHeight(); i++) 
+	for(i = 0; i < in->getHeight(); i++) 
 	{
-		QRgb *inl = (QRgb *)in->scanLine(i);
-		uchar *outl = out->scanLine(i);
-		for(int j = 0; j < in->getWidth(); j++) {
-			uint v = qGray(*inl);
+		//QRgb *inl = (QRgb *)in->scanLine(i);
+		//unsigned char *outl = out->scanLine(i);
+		for(j = 0; j < in->getWidth(); j++) {
+			unsigned int v = (in->getImage()[(i * in->getWidth() + j) * 3 + 0] * 54 
+				+ in->getImage()[(i * in->getWidth() + j) * 3 + 1] * 183
+				+ in->getImage()[(i * in->getWidth() + j) * 3 + 2] * 19) / 256;//qGray(*inl); // preracunava u sivo!!!! // pre bi bilo da je unsigned char
 			hist[v] = hist[v] + 1;
-			inl++;
-			*outl++ = v;
+			//inl++;
+			out->getImage()[i * in->getWidth() + j] = v;
 		}
 	}
 	double w = 1/((double)(in->getHeight()*in->getWidth()));
 	cdf[0] = w*hist[0];
-	for(int i = 1; i < 256; i++) cdf[i] = cdf[i-1] + w*hist[i];
+	for(i = 1; i < 256; i++) cdf[i] = cdf[i-1] + w*hist[i];
 	return;
 }
 
 //it's up to the caller to "delete" the pointer to free the mem!
-Image* ImageAlign::setbitmap(const QSize size)
+Image<unsigned char>* ImageAlign::setbitmap(const unsigned int height, const unsigned int width)
 {
-	Image *img = new QImage(size,QImage::Format_Indexed8);
-	
-	QVector<QRgb> binaryColorTable;
-	binaryColorTable.append(qRgb(0,0,0));
-	binaryColorTable.append(qRgb(255,255,255));
-	img->setColorTable(binaryColorTable);
+	Image<unsigned char> *img = new Image<unsigned char>(3, height, width);
+	//ili 0 ili 255 treba provaliti gde se poziva!!!
+	//QVector<QRgb> binaryColorTable;
+	//binaryColorTable.append(qRgb(0,0,0));
+	//binaryColorTable.append(qRgb(255,255,255));
+	//img->setColorTable(binaryColorTable);
 	return img;
 }

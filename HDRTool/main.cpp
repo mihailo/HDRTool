@@ -15,6 +15,7 @@
 #include "tonemapping/ToneMappingDrago03.h"
 #include "genhdr/GenerateHDRDebevec.h"
 #include "genhdr/Responses.h"
+#include "imagealign/ImageAlign.h"
 
 
 
@@ -50,7 +51,7 @@ void testRGB2RGBE()
 
 	printf("size of trgbe %d\n", sizeof(Trgbe));
 	
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	image->setWidth(2400);
 	image->setHeight(4500);
 	int x,y;
@@ -58,9 +59,9 @@ void testRGB2RGBE()
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
 		}
 	}
 	
@@ -98,12 +99,12 @@ void testRGB2RGBE()
 
 void testRGBE2RGB()
 {
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	image->setExposure(1.0);
 	image->setWidth(1024);
 	image->setHeight(512);
 
-	image->getHDR();
+	image->getImage();
 
 	unsigned int *r, *g, *b, *e;
 	r = new unsigned int[image->getHeight()*image->getWidth()];
@@ -130,7 +131,7 @@ void testRGBE2RGB()
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			float *adr = &image->getHDR()[(y*image->getWidth()+x) * 3];
+			float *adr = &image->getImage()[(y*image->getWidth()+x) * 3];
 			printf("%f %f %f ", adr[0], adr[1], adr[2]);
 		}
 		printf("\n\n");
@@ -149,7 +150,7 @@ void testRGBE2RGB()
 
 void testLuminancePixel() 
 {
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	image->setWidth(2400);
 	image->setHeight(4500);
 	int x,y;
@@ -157,10 +158,10 @@ void testLuminancePixel()
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = x;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
-			if(x == 1234 && y == 34) image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = x;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			if(x == 1234 && y == 34) image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
 		}
 	}
 
@@ -172,7 +173,7 @@ void testLuminancePixel()
 
 void testDrago03()
 {
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	image->setWidth(16);
 	image->setHeight(16);
 	int x,y;
@@ -180,10 +181,10 @@ void testDrago03()
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			image->getHDR()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
-			if(x == 5 && y == 5) image->getHDR()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			if(x == 5 && y == 5) image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
 		}
 	}
 	ToneMappingDrago03 *tone = new ToneMappingDrago03();
@@ -205,7 +206,7 @@ void testDrago03()
 
 void testDebevec()
 {
-	Image *image = new Image();
+	Image<float> *image = new Image<float>(3);
 	image->setWidth(16);
 	image->setHeight(16);
 	unsigned int *ldr = new unsigned int[3 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
@@ -251,6 +252,11 @@ void testDebevec()
 
 
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+}
+
+void testImageAligne() 
+{
+	ImageAlign *align = new ImageAlign();
 }
 
 void testFile()
@@ -300,7 +306,7 @@ void testFile()
 	*/
 	FILE *file = fopen("proba_cuda1.hdr", "r");
 	Radiance *radiance = new Radiance(file);
-	Image *image = radiance->readFile();
+	Image<float> *image = radiance->readFile();
 	printf("exposure: %f\n", image->getExposure());
 	printf("height: %d\n", image->getHeight());
 	printf("width: %d\n", image->getWidth());
@@ -349,10 +355,11 @@ void testFile()
 
 int main(int argc, char **argv)
 {
-	testFile();
-	//testDebevec();
+	//testFile();
+	testDebevec();
 	//testDrago03();
 	//testLuminancePixel();
+	//testRGB2RGBE();
 	//testRGBE2RGB();
 	
 	printf("\n\nThe End\n\n");

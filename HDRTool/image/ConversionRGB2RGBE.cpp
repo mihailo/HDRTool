@@ -15,7 +15,7 @@ ConversionRGB2RGBE::~ConversionRGB2RGBE()
 	delete core;
 }
 
-void ConversionRGB2RGBE::convertRGB2RGBE(Image *img, 
+void ConversionRGB2RGBE::convertRGB2RGBE(Image<float> *img, 
 					 unsigned int *r, 
 					 unsigned int *g, 
 					 unsigned int *b, 
@@ -102,7 +102,7 @@ void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
-		size, image->getHDR(), 0, NULL, NULL);
+		size, image->getImage(), 0, NULL, NULL);
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

@@ -17,7 +17,7 @@ GenerateHDRDebevec::~GenerateHDRDebevec()
 	delete core;
 }
 
-void GenerateHDRDebevec::generateHDR(Image *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img)
+void GenerateHDRDebevec::generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img)
 {
 	image = img;
 	
@@ -231,7 +231,7 @@ void GenerateHDRDebevec::getDataFromOpenCLMemory()
 	cl_int ciErr1;			// Error code var
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hdr, CL_TRUE, 0, 
-		size, image->getHDR(), 0, NULL, NULL);
+		size, image->getImage(), 0, NULL, NULL);
 	unsigned int size_hdrpic = sizeof(unsigned int) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hdrpic, CL_TRUE, 0, 
 		size_hdrpic, image->getPreviewImage(), 0, NULL, NULL);	
