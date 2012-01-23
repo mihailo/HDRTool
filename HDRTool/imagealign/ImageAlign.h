@@ -10,7 +10,7 @@ public:
 	~ImageAlign(void);
 
 
-	void mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtrList, bool **ldr_tiff_input);
+	void mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtrList, bool *ldr_tiff_input);
 
 	Image<unsigned char>* shiftQImage(Image<unsigned char> *in, int dx, int dy);
 

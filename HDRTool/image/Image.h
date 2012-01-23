@@ -38,7 +38,7 @@ public:
 	unsigned int* getPreviewImage();
 	void setPreviewImage(unsigned int *newPreviewImage);
 
-	Image* scaled(unsigned int h, unsigned int w);
+	Image<unsigned char>* scaled2();
 	void fill(Type r, Type g, Type b);
 	void fill(Type g);
 };

@@ -48,14 +48,14 @@ Image<unsigned char>* ImageAlign::shiftQImage(Image<unsigned char> *in, int dx, 
 	return out;
 }
 
-void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtrList, bool **ldr_tiff_input) 
+void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtrList, bool *ldr_tiff_input) 
 {
 	int width = ImagePtrList[0]->getWidth();
 	int height = ImagePtrList[0]->getHeight();
 	double quantile = 0.5;
 	int noise = 4;
 	int shift_bits = max((int)floor(log((double)min(width, height)) / log((double)2)) - 6 , 0); //calculate log for base 2 log( n ) / log( 2 ); 
-	logFile("::mtb_alignment: width=%d, height=%d, shift_bits=%d", width, height, shift_bits);
+	logFile("::mtb_alignment: width=%d, height=%d, shift_bits=%d\n", width, height, shift_bits);
 
 	//these arrays contain the shifts of each image (except the 0-th) wrt the previous one
 	int *shiftsX=new int[num_of_image - 1];
@@ -67,7 +67,7 @@ void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtr
 		mtbalign(ImagePtrList[i], ImagePtrList[i + 1], quantile, noise, shift_bits, shiftsX[i], shiftsY[i]);
 	}
 	
-	logFile("::mtb_alignment: now shifting the images");
+	logFile("::mtb_alignment: now shifting the images\n");
 	int originalsize = num_of_image; //ImagePtrList.size();
 	//shift the images (apply the shifts starting from the second (index=1))
 	for (int i = 1; i < originalsize; i++) 
@@ -79,9 +79,9 @@ void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtr
 		{
 			cumulativeX += shiftsX[j];
 			cumulativeY += shiftsY[j];
-			logFile("::mtb_alignment: partial cumulativeX=%d, cumulativeY=%d", cumulativeX, cumulativeY);
+			logFile("::mtb_alignment: partial cumulativeX=%d, cumulativeY=%d\n", cumulativeX, cumulativeY);
 		}
-		logFile("::mtb_alignment: Cumulative shift for image %d = (%d,%d)",i,cumulativeX,cumulativeY);
+		logFile("::mtb_alignment: Cumulative shift for image %d = (%d,%d)\n",i,cumulativeX,cumulativeY);
 		Image<unsigned char> *shifted=shiftQImage(ImagePtrList[1], cumulativeX, cumulativeY);
 		/*if (ldr_tiff_input[1]) 
 		{
@@ -115,11 +115,11 @@ void ImageAlign::mtbalign(Image<unsigned char> *image1, Image<unsigned char> *im
 	for(median2 = 0; median2 < 256; median2++) 
 		if( cdf2[median2] >= quantile ) break;
 	
- 	logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d",median1,median2);
+ 	logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d\n",median1,median2);
 	getExpShift(img1lum, median1, img2lum, median2, noise, shift_bits, shift_x, shift_y);
 	delete img1lum; 
 	delete img2lum;
-	logFile("::mtb_alignment: align::done, final shift is (%d,%d)",shift_x, shift_y);
+	logFile("::mtb_alignment: align::done, final shift is (%d,%d)\n",shift_x, shift_y);
 }
 
 void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1, 
@@ -130,8 +130,8 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 	int curr_x = 0;
 	int curr_y = 0;
 	if( shift_bits > 0) {
-		Image<unsigned char> *img1small = img1->scaled(img1->getHeight() / 2, img1->getWidth() / 2);
-		Image<unsigned char> *img2small = img2->scaled(img2->getHeight() / 2, img2->getWidth() / 2);
+		Image<unsigned char> *img1small = img1->scaled2();
+		Image<unsigned char> *img2small = img2->scaled2();
 		getExpShift(img1small, median1, img2small, median2, noise, shift_bits-1, curr_x, curr_y);
 		curr_x *= 2;
 		curr_y *= 2;
@@ -174,7 +174,7 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 	delete img2th_shifted; 
 	delete img2mask_shifted; 
 	delete diff;
- 	logFile("::mtb_alignment: getExpShift::Level %d  shift (%d,%d)", shift_bits,shift_x, shift_y);
+ 	logFile("::mtb_alignment: getExpShift::Level %d  shift (%d,%d)\n", shift_bits,shift_x, shift_y);
 	return;
 }
 
@@ -279,7 +279,7 @@ void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, dou
 				+ in->getImage()[(i * in->getWidth() + j) * 3 + 2] * 19) / 256;//qGray(*inl); // preracunava u sivo!!!! // pre bi bilo da je unsigned char
 			hist[v] = hist[v] + 1;
 			//inl++;
-			out->getImage()[i * in->getWidth() + j] = v;
+			out->getImage()[i * out->getWidth() + j] = v;
 		}
 	}
 	double w = 1/((double)(in->getHeight()*in->getWidth()));

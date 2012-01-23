@@ -254,9 +254,75 @@ void testDebevec()
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
 }
 
+void testScaled2()
+{
+	Image<unsigned char> *image = new Image<unsigned char>(3, 32, 16);
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			//if(x == 5 && y == 5) image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+		}
+	}
+	image->scaled2();
+}
+
 void testImageAligne() 
 {
+	Image<unsigned char> *image = new Image<unsigned char>(3);
+	Image<unsigned char> *image2 = new Image<unsigned char>(3);
+	image->setWidth(16);
+	image->setHeight(16);
+
+	image2->setWidth(16);
+	image2->setHeight(16);
+	
+	unsigned int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 34;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 78;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 12;
+
+			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 34;
+			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 78;
+			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 12;
+
+			if(y == 6)
+			{
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 21;
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 21;
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 21;
+			}
+
+			if(y == 10)
+			{
+				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 21;
+				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 21;
+				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 21;
+			}
+		}
+	}
+	
 	ImageAlign *align = new ImageAlign();
+	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
+
+	bool *image_bool = new bool[2];
+	int i = 0;
+	for(i = 0; i < 2; i++)
+	{
+		image_bool[i] = false;
+		//image_list[i] = image;
+	}
+	image_list[0] = image;
+	image_list[1] = image2;
+	align->mtb_alignment(2, image_list, image_bool);
 }
 
 void testFile()
@@ -353,14 +419,17 @@ void testFile()
 	printf("%d %d %d %d\n", pixel->r, pixel->g, pixel->b, pixel->e);*/
 }
 
+
 int main(int argc, char **argv)
 {
 	//testFile();
-	testDebevec();
+	//testDebevec();
 	//testDrago03();
 	//testLuminancePixel();
 	//testRGB2RGBE();
 	//testRGBE2RGB();
+	//testScaled2();
+	testImageAligne();
 	
 	printf("\n\nThe End\n\n");
 
