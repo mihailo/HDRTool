@@ -95,6 +95,9 @@ void Radiance::readRadianceHeader(Image<float> *image)
 	printf("RGBE: image size %dx%d\n", *width, *height);
 	image->setHeight(*height);
 	image->setWidth(*width);
+
+	delete width;
+	delete height;
 }
 
 inline float clampS( const float v, const float min, const float max )
@@ -137,7 +140,6 @@ void Radiance::readRadianceData(Image<float> *image)
 		// read rle header
 		printf("read line: %d \n", y);
 		Trgbe header[4];
-		printf("%d %d \n", sizeof(header), sizeof(Trgbe));
 		fread(header, sizeof(header), 1, imageFile);
 		if( header[0] != 2 || header[1] != 2 || (header[2]<<8) + header[3] != image->getWidth() )
 		{
@@ -194,6 +196,7 @@ void Radiance::readRadianceData(Image<float> *image)
 			}
 			//printf("\n");
 		}
+		printf("end with reading line %d \n", y);
 
 	}
 	
@@ -235,7 +238,6 @@ void Radiance::readRadianceData(Image<float> *image)
 void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 {
 	int peek = 0;
-	printf("%d\n", sizeof(*scanline));
 	while( peek < size )
 	{
 		Trgbe p[2];
@@ -246,7 +248,7 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 		{
 			// a run
 			int run_len = p[0]-128;
-			
+			if(run_len + peek > size) run_len = size - peek; //TEST
 			while( run_len>0 )
 			{
 				scanline[peek++] = p[1];
@@ -261,13 +263,13 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 			int nonrun_len = p[0]-1;
 			if( nonrun_len>0 )
 			{
+				if(peek + nonrun_len > size) nonrun_len = size - peek; //TEST
 				size_t rez1 = fread(scanline+peek, sizeof(*scanline), nonrun_len, imageFile);
 				//printf("fread rez1 = %d\n", rez1);
 				peek += nonrun_len;
 			}
 		}
 	}
-	printf("peek %d, size %d \n", peek, size);
 	if( peek!=size )
 	{
 		printf( "RGBE: difference in size while reading RLE scanline\n");

@@ -148,10 +148,10 @@ Image<unsigned char>* Image<Type>::scaled2()
 				p = AVERAGE((unsigned char)image[y2 * width * num_of_channels + x2 * num_of_channels + ch], (unsigned char)image[y2 * width * num_of_channels + (x2 + 1) * num_of_channels + ch]);
 				q = AVERAGE((unsigned char)image[(y2 + 1) * width * num_of_channels + x2 * num_of_channels + ch], (unsigned char)image[(y2 + 1) * width * num_of_channels + (x2 + 1) * num_of_channels + ch]);
 				img2->getImage()[y * img2->getWidth() * num_of_channels + x * num_of_channels + ch] = AVERAGE(p, q);
-				printf("%d ", AVERAGE(p, q));
+				//printf("%d ", AVERAGE(p, q));
 			}
 		} 
-		printf("\n");
+		//printf("\n");
 	} 
 
 	return img2;

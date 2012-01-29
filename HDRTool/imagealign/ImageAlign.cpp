@@ -54,7 +54,7 @@ void ImageAlign::mtb_alignment(int num_of_image, Image<unsigned char> **ImagePtr
 	int height = ImagePtrList[0]->getHeight();
 	double quantile = 0.5;
 	int noise = 4;
-	int shift_bits = max((int)floor(log((double)min(width, height)) / log((double)2)) - 6 , 0); //calculate log for base 2 log( n ) / log( 2 ); 
+	int shift_bits = max((int)floor(log((double)min(width, height)) / log((double)2)) - 6, 0); //calculate log for base 2 log( n ) / log( 2 ); 
 	logFile("::mtb_alignment: width=%d, height=%d, shift_bits=%d\n", width, height, shift_bits);
 
 	//these arrays contain the shifts of each image (except the 0-th) wrt the previous one
@@ -132,7 +132,7 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 	if( shift_bits > 0) {
 		Image<unsigned char> *img1small = img1->scaled2();
 		Image<unsigned char> *img2small = img2->scaled2();
-		getExpShift(img1small, median1, img2small, median2, noise, shift_bits-1, curr_x, curr_y);
+		getExpShift(img1small, median1, img2small, median2, noise, shift_bits - 1, curr_x, curr_y);
 		curr_x *= 2;
 		curr_y *= 2;
 	}
@@ -182,7 +182,7 @@ void ImageAlign::shiftimage(Image<unsigned char> *in, const int dx, const int dy
 {
 	//obe su kao grayscale
 	out->fill(0);
-	unsigned int i;
+	int i;
 	for(i = 0; i < in->getHeight(); i++) {
 		if( (i+dy) < 0 ) continue;
 		if( (i+dy) >= in->getHeight()) break;
@@ -203,6 +203,7 @@ void ImageAlign::setThreshold(Image<unsigned char> *in, const int threshold, con
 			Image<unsigned char> *threshold_out, Image<unsigned char> *mask_out)
 {
 	unsigned int i;
+	printf("threshold\n");
 	for(i = 0; i < in->getHeight(); i++) 
 	{
 		//const unsigned char *inp = in->scanLine(i);
@@ -216,7 +217,9 @@ void ImageAlign::setThreshold(Image<unsigned char> *in, const int threshold, con
 			mask_out->getImage()[i * threshold_out->getWidth() + j] = 
 				(in->getImage()[i * threshold_out->getWidth() + j] > (threshold-noise)) && (in->getImage()[i * threshold_out->getWidth() + j] < (threshold+noise)) ? 0 : 1;
 			//inp++;
+			//printf("%d ", threshold_out->getImage()[i * threshold_out->getWidth() + j]);
 		}
+		//printf("\n");
 	}
 	return;
 }
@@ -235,8 +238,15 @@ void ImageAlign::XORimages(Image<unsigned char> *img1, Image<unsigned char> *mas
 		unsigned int j;
 		for(j = 0; j < img1->getWidth(); j++) {
 			//*dp++ = xor_t[*p1++][*p2++]*(*m1++)*(*m2++);
-			diff->getImage()[i * img1->getWidth() + j] = (img1->getImage()[i * img1->getWidth() + j] xor img2->getImage()[i * img1->getWidth() + j]) 
+			unsigned char pix =  (img1->getImage()[i * img1->getWidth() + j] xor img2->getImage()[i * img1->getWidth() + j]) 
 				and mask1->getImage()[i * img1->getWidth() + j] and mask2->getImage()[i * img1->getWidth() + j]; //*dp++ = (*p1++ xor *p2++) and *m1++ and *m2++;
+			/*printf("img1 = %d xor img2 = %d and mask1 = %d and mask2 = %d pix = %d\n", 
+				img1->getImage()[i * img1->getWidth() + j],
+				img2->getImage()[i * img1->getWidth() + j],
+				mask1->getImage()[i * img1->getWidth() + j],
+				mask2->getImage()[i * img1->getWidth() + j],
+				pix);*/
+			diff->getImage()[i * img1->getWidth() + j] = pix;
 		}
 	}
 	return;
@@ -244,15 +254,21 @@ void ImageAlign::XORimages(Image<unsigned char> *img1, Image<unsigned char> *mas
 
 long ImageAlign::sumimage(Image<unsigned char> *img)
 {
+	printf("sumimage\n");
 	long ttl  = 0;
 	unsigned int i;
 	for(i = 0; i < img->getHeight(); i++) 
 	{
 		//const unsigned char *p = img->scanLine(i);
 		unsigned int j;
-		for(j = 0; j < img->getWidth(); j++) 
+		for(j = 0; j < img->getWidth(); j++)
+		{
+			//printf("%d ", img->getImage()[i * img->getWidth() + j]);
 			ttl += (long)(img->getImage()[i * img->getWidth() + j]);
+		}
+		//printf("\n");
 	}
+	printf("ttl = %d\n", ttl);
 	return ttl;
 }
 
@@ -280,11 +296,23 @@ void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, dou
 			hist[v] = hist[v] + 1;
 			//inl++;
 			out->getImage()[i * out->getWidth() + j] = v;
+			//printf("%d ", out->getImage()[i * out->getWidth() + j]);
 		}
+		//printf("\n");
 	}
-	double w = 1/((double)(in->getHeight()*in->getWidth()));
-	cdf[0] = w*hist[0];
-	for(i = 1; i < 256; i++) cdf[i] = cdf[i-1] + w*hist[i];
+	printf("%d %d \n", in->getHeight(), in->getWidth());
+	double size = in->getHeight() * in->getWidth();
+	printf("%e \n", size);
+	double w = 1.0/size;
+	printf("%e \n", w);
+	cdf[0] = w * (double)hist[0];
+	printf("%f ", cdf[0]);
+	for(i = 1; i < 256; i++) 
+	{
+		cdf[i] = (double)cdf[i-1] + w * (double)hist[i];
+		printf("%f ", cdf[i]);
+	}
+	printf("\n");
 	return;
 }
 

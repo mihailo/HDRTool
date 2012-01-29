@@ -9,8 +9,8 @@ class Image
 private:
 	unsigned int num_of_channels;
 
-	unsigned int height;
-	unsigned int width;
+	int height;
+	int width;
 
 	float exposure;
 

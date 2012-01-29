@@ -275,37 +275,43 @@ void testImageAligne()
 {
 	Image<unsigned char> *image = new Image<unsigned char>(3);
 	Image<unsigned char> *image2 = new Image<unsigned char>(3);
-	image->setWidth(16);
-	image->setHeight(16);
+	image->setWidth(8);
+	image->setHeight(8);
 
-	image2->setWidth(16);
-	image2->setHeight(16);
+	image2->setWidth(8);
+	image2->setHeight(8);
 	
 	unsigned int x,y;
 	for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 34;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 78;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 12;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = rand() % 256;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = rand() % 256;
+			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = rand() % 256;
 
-			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 34;
-			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 78;
-			image2->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 12;
-
-			if(y == 6)
+			if(y >= 2 && y<= 3 && x >= 2 && x <= 3)
 			{
-				image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 21;
-				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 21;
-				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 21;
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 156;
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 223;
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 167;
 			}
+		}
+	}
 
-			if(y == 10)
+	for(y=0; y<image2->getHeight(); y++)
+	{
+		for(x=0; x<image2->getWidth(); x++)
+		{
+			image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 0] = rand() % 256;
+			image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 1] = rand() % 256;
+			image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 2] = rand() % 256;
+
+			if(y >= 4 && y<= 5 && x >= 2 && x <= 3)
 			{
-				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 21;
-				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 21;
-				image2->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 21;
+				image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 0] = 156;
+				image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 1] = 223;
+				image2->getImage()[y * image2->getWidth() * 3 + x * 3 + 2] = 167;
 			}
 		}
 	}
@@ -324,6 +330,61 @@ void testImageAligne()
 	image_list[1] = image2;
 	align->mtb_alignment(2, image_list, image_bool);
 }
+
+void testAligneRealImage() 
+{
+	FILE *file = fopen("clocks.hdr", "r");
+	Radiance *radiance = new Radiance(file);
+	Image<float> *image = radiance->readFile();
+	printf("exposure: %f\n", image->getExposure());
+	printf("height: %d\n", image->getHeight());
+	printf("width: %d\n", image->getWidth());
+	fclose(file);
+	delete radiance;
+	
+	LuminancePixel *lum = new LuminancePixel();
+	float avLum, maxLum;
+	lum->calculate_luminance_pixel(image, &avLum, &maxLum);
+	printf("avLum=%f maxLum=%f\n", avLum, maxLum);
+	delete lum;
+
+	ToneMappingDrago03 *tone = new ToneMappingDrago03();
+	//float avLum = 1;
+	//float maxLum = 4567.45;
+	unsigned int *pic = new unsigned int[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	tone->toneMapping_Drago03(image, &avLum, &maxLum, pic, 0.85);
+
+	Image<unsigned char> *img1, *img2;
+	img1 = new Image<unsigned char>(RGB_NUM_OF_CHANNELS, image->getHeight(), image->getWidth());
+	img2 = new Image<unsigned char>(RGB_NUM_OF_CHANNELS, image->getHeight(), image->getWidth());
+	for(int y = 0; y < image->getHeight(); y++)
+	{
+		for(int x = 0; x < image->getWidth(); x++)
+		{
+			img1->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 0] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 0];
+			img1->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 1] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 1];
+			img1->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 2] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 2];
+			img2->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 0] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 0];
+			img2->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 1] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 1];
+			img2->getImage()[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 2] = pic[y * image->getWidth() * RGB_NUM_OF_CHANNELS + x * RGB_NUM_OF_CHANNELS + 2];
+		}
+	}
+
+	ImageAlign *align = new ImageAlign();
+	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
+
+	bool *image_bool = new bool[2];
+	int i = 0;
+	for(i = 0; i < 2; i++)
+	{
+		image_bool[i] = false;
+		//image_list[i] = image;
+	}
+	image_list[0] = img1;
+	image_list[1] = img2;
+	align->mtb_alignment(2, image_list, image_bool);
+}
+
 
 void testFile()
 {
@@ -430,7 +491,9 @@ int main(int argc, char **argv)
 	//testRGBE2RGB();
 	//testScaled2();
 	testImageAligne();
-	
+	//testAligneRealImage();
+
+
 	printf("\n\nThe End\n\n");
 
 	system("Pause");
