@@ -16,8 +16,9 @@
 #include "genhdr/GenerateHDRDebevec.h"
 #include "genhdr/Responses.h"
 #include "imagealign/ImageAlign.h"
+#include "CImg.h"
 
-
+using namespace cimg_library;
 
 
 // OpenCL Vars
@@ -331,6 +332,51 @@ void testImageAligne()
 	align->mtb_alignment(2, image_list, image_bool);
 }
 
+void testAlignJpegPic()
+{
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	Image<unsigned char> *img1 = new Image<unsigned char>(3, image1._height, image1._width);
+	for(int y = 0; y <image1._height; y++)
+	{
+		for(int x = 0; x < image1._width; x++)
+		{
+			img1->getImage()[y * image1._width * 3 + x * 3 + 0] = image1._data[image1._width * image1._height * 0 + y * image1._width + x];
+			img1->getImage()[y * image1._width * 3 + x * 3 + 1] = image1._data[image1._width * image1._height * 1 + y * image1._width + x];
+			img1->getImage()[y * image1._width * 3 + x * 3 + 2] = image1._data[image1._width * image1._height * 2 + y * image1._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+
+	CImg<unsigned char> image2("IMG_3583.jpg");
+	Image<unsigned char> *img2 = new Image<unsigned char>(3, image2._height, image2._width);
+	for(int y = 0; y <image2._height; y++)
+	{
+		for(int x = 0; x < image2._width; x++)
+		{
+			img2->getImage()[y * image2._width * 3 + x * 3 + 0] = image2._data[image2._width * image2._height * 0 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 1] = image2._data[image2._width * image2._height * 1 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 2] = image2._data[image2._width * image2._height * 2 + y * image2._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+
+	ImageAlign *align = new ImageAlign();
+	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
+
+	bool *image_bool = new bool[2];
+	int i = 0;
+	for(i = 0; i < 2; i++)
+	{
+		image_bool[i] = false;
+		//image_list[i] = image;
+	}
+	image_list[0] = img1;
+	image_list[1] = img2;
+	align->mtb_alignment(2, image_list, image_bool);
+}
+
 void testAligneRealImage() 
 {
 	FILE *file = fopen("clocks.hdr", "r");
@@ -490,8 +536,9 @@ int main(int argc, char **argv)
 	//testRGB2RGBE();
 	//testRGBE2RGB();
 	//testScaled2();
-	testImageAligne();
+	//testImageAligne();
 	//testAligneRealImage();
+	testAlignJpegPic();
 
 
 	printf("\n\nThe End\n\n");
