@@ -39,6 +39,23 @@ const char* cExecutableName = NULL;
 
 
 
+Image<unsigned char>* loadImage(char *fileName)
+{
+	CImg<unsigned char> image2(fileName);
+	Image<unsigned char> *img2 = new Image<unsigned char>(3, image2._height, image2._width);
+	for(int y = 0; y <image2._height; y++)
+	{
+		for(int x = 0; x < image2._width; x++)
+		{
+			img2->getImage()[y * image2._width * 3 + x * 3 + 0] = image2._data[image2._width * image2._height * 0 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 1] = image2._data[image2._width * image2._height * 1 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 2] = image2._data[image2._width * image2._height * 2 + y * image2._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+	return img2;
+}
 
 void testRGB2RGBE()
 {
@@ -433,47 +450,11 @@ void testAligneRealImage()
 
 void testVertical()
 {
-	CImg<unsigned char> image1("IMG_3582.jpg");
-	Image<unsigned char> *img1 = new Image<unsigned char>(3, image1._height, image1._width);
-	for(int y = 0; y <image1._height; y++)
-	{
-		for(int x = 0; x < image1._width; x++)
-		{
-			img1->getImage()[y * image1._width * 3 + x * 3 + 0] = image1._data[image1._width * image1._height * 0 + y * image1._width + x];
-			img1->getImage()[y * image1._width * 3 + x * 3 + 1] = image1._data[image1._width * image1._height * 1 + y * image1._width + x];
-			img1->getImage()[y * image1._width * 3 + x * 3 + 2] = image1._data[image1._width * image1._height * 2 + y * image1._width + x];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
-		}
-		//printf("\n");
-	}
-	CImg<unsigned char> image2("IMG_3583.jpg");
-	Image<unsigned char> *img2 = new Image<unsigned char>(3, image2._height, image2._width);
-	for(int y = 0; y <image2._height; y++)
-	{
-		for(int x = 0; x < image2._width; x++)
-		{
-			img2->getImage()[y * image2._width * 3 + x * 3 + 0] = image2._data[image2._width * image2._height * 0 + y * image2._width + x];
-			img2->getImage()[y * image2._width * 3 + x * 3 + 1] = image2._data[image2._width * image2._height * 1 + y * image2._width + x];
-			img2->getImage()[y * image2._width * 3 + x * 3 + 2] = image2._data[image2._width * image2._height * 2 + y * image2._width + x];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
-		}
-		//printf("\n");
-	}
-	CImg<unsigned char> image3("IMG_3584.jpg");
-	Image<unsigned char> *img3 = new Image<unsigned char>(3, image3._height, image3._width);
-	for(int y = 0; y <image3._height; y++)
-	{
-		for(int x = 0; x < image3._width; x++)
-		{
-			img3->getImage()[y * image3._width * 3 + x * 3 + 0] = image3._data[image3._width * image3._height * 0 + y * image3._width + x];
-			img3->getImage()[y * image3._width * 3 + x * 3 + 1] = image3._data[image3._width * image3._height * 1 + y * image3._width + x];
-			img3->getImage()[y * image3._width * 3 + x * 3 + 2] = image3._data[image3._width * image3._height * 2 + y * image3._width + x];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
-		}
-		//printf("\n");
-	}
-
-
+	//CImg<unsigned char> image1("IMG_3582.jpg");
+	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
+	Image<unsigned char> *img3 = loadImage("IMG_3584.jpg");;
+	
 	ImageAlign *align = new ImageAlign();
 	Image<unsigned char>** image_list = new Image<unsigned char>*[3];
 
@@ -481,7 +462,7 @@ void testVertical()
 	int i = 0;
 	for(i = 0; i < 3; i++)
 	{
-		image_bool[i] = false;
+		image_bool[i] = true;
 		//image_list[i] = image;
 	}
 	image_list[0] = img1;
@@ -556,6 +537,7 @@ void testVertical()
 	
 	
 	
+	CImg<unsigned char> image1("IMG_3582.jpg");
 	for(int y = 0; y <image1._height; y++)
 	{
 		for(int x = 0; x < image1._width; x++)
