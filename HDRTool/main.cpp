@@ -431,7 +431,146 @@ void testAligneRealImage()
 	align->mtb_alignment(2, image_list, image_bool);
 }
 
+void testVertical()
+{
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	Image<unsigned char> *img1 = new Image<unsigned char>(3, image1._height, image1._width);
+	for(int y = 0; y <image1._height; y++)
+	{
+		for(int x = 0; x < image1._width; x++)
+		{
+			img1->getImage()[y * image1._width * 3 + x * 3 + 0] = image1._data[image1._width * image1._height * 0 + y * image1._width + x];
+			img1->getImage()[y * image1._width * 3 + x * 3 + 1] = image1._data[image1._width * image1._height * 1 + y * image1._width + x];
+			img1->getImage()[y * image1._width * 3 + x * 3 + 2] = image1._data[image1._width * image1._height * 2 + y * image1._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+	CImg<unsigned char> image2("IMG_3583.jpg");
+	Image<unsigned char> *img2 = new Image<unsigned char>(3, image2._height, image2._width);
+	for(int y = 0; y <image2._height; y++)
+	{
+		for(int x = 0; x < image2._width; x++)
+		{
+			img2->getImage()[y * image2._width * 3 + x * 3 + 0] = image2._data[image2._width * image2._height * 0 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 1] = image2._data[image2._width * image2._height * 1 + y * image2._width + x];
+			img2->getImage()[y * image2._width * 3 + x * 3 + 2] = image2._data[image2._width * image2._height * 2 + y * image2._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+	CImg<unsigned char> image3("IMG_3584.jpg");
+	Image<unsigned char> *img3 = new Image<unsigned char>(3, image3._height, image3._width);
+	for(int y = 0; y <image3._height; y++)
+	{
+		for(int x = 0; x < image3._width; x++)
+		{
+			img3->getImage()[y * image3._width * 3 + x * 3 + 0] = image3._data[image3._width * image3._height * 0 + y * image3._width + x];
+			img3->getImage()[y * image3._width * 3 + x * 3 + 1] = image3._data[image3._width * image3._height * 1 + y * image3._width + x];
+			img3->getImage()[y * image3._width * 3 + x * 3 + 2] = image3._data[image3._width * image3._height * 2 + y * image3._width + x];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
 
+
+	ImageAlign *align = new ImageAlign();
+	Image<unsigned char>** image_list = new Image<unsigned char>*[3];
+
+	bool *image_bool = new bool[3];
+	int i = 0;
+	for(i = 0; i < 3; i++)
+	{
+		image_bool[i] = false;
+		//image_list[i] = image;
+	}
+	image_list[0] = img1;
+	image_list[1] = img2;
+	image_list[2] = img3;
+	align->mtb_alignment(3, image_list, image_bool);
+
+
+
+	Image<float> *image = new Image<float>(3, img1->getHeight(), img2->getWidth());
+	unsigned int *ldr = new unsigned int[3 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			ldr[y * image->getWidth() * 3 + x * 3 + 0] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[y * image->getWidth() * 3 + x * 3 + 1] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[y * image->getWidth() * 3 + x * 3 + 2] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+			
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+		}
+	}
+	
+	GenerateHDRDebevec *genHDR = new GenerateHDRDebevec();
+	float *arrayofexptime = new float[3];
+	arrayofexptime[0] = 1.0 / 125.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	arrayofexptime[1] = 1.0 / 500.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	arrayofexptime[2] = 1.0 / 30.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	printf("exp = %f \n", arrayofexptime[0]);
+	float *Ir;
+	float *Ig;
+	float *Ib;
+	float *W;
+	int M;
+
+	int opt_bpp = 8; //info po pix	
+	//either 256(LDRs) or 65536 (RAW images, 16 bit tiffs).
+	M = (int) powf(2.0f,opt_bpp);
+	W = new float[M];
+	Responses *r = new Responses();
+	r->weights_triangle(W, M);
+	Ir = new float[M];
+	Ig = new float[M];
+	Ib = new float[M];
+	r->responseLinear(Ir, M);
+	r->responseLinear(Ig, M);
+	r->responseLinear(Ib, M);
+
+
+	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+
+
+	LuminancePixel *lum = new LuminancePixel();
+	float avLum, maxLum;
+	lum->calculate_luminance_pixel(image, &avLum, &maxLum);
+	printf("avLum=%f maxLum=%f\n", avLum, maxLum);
+	delete lum;
+
+	ToneMappingDrago03 *tone = new ToneMappingDrago03();
+	//float avLum = 1;
+	//float maxLum = 4567.45;
+	unsigned int *pic = new unsigned int[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	tone->toneMapping_Drago03(image, &avLum, &maxLum, pic, 0.85);
+
+	
+	
+	
+	for(int y = 0; y <image1._height; y++)
+	{
+		for(int x = 0; x < image1._width; x++)
+		{
+			image1._data[image1._width * image1._height * 0 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 0];
+			image1._data[image1._width * image1._height * 1 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 1];
+			image1._data[image1._width * image1._height * 2 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 2];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
+		}
+		//printf("\n");
+	}
+	
+	image1.save("test.bmp");
+
+}
 void testFile()
 {
 	/*FILE *file = fopen("clocks.hdr", "r");
@@ -538,8 +677,8 @@ int main(int argc, char **argv)
 	//testScaled2();
 	//testImageAligne();
 	//testAligneRealImage();
-	testAlignJpegPic();
-
+	//testAlignJpegPic();
+	testVertical();
 
 	printf("\n\nThe End\n\n");
 
