@@ -191,64 +191,77 @@ void testLuminancePixel()
 
 void testDrago03()
 {
-	Image<float> *image = new Image<float>(3);
-	image->setWidth(16);
-	image->setHeight(16);
-	int x,y;
-	for(y=0; y<image->getHeight(); y++)
-	{
-		for(x=0; x<image->getWidth(); x++)
-		{
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
-			if(x == 5 && y == 5) image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
-		}
-	}
+	FILE *file = fopen("clocks.hdr", "rb");
+	Radiance *radiance = new Radiance(file);
+	Image<float> *image = radiance->readFile();
+	printf("exposure: %f\n", image->getExposure());
+	printf("height: %d\n", image->getHeight());
+	printf("width: %d\n", image->getWidth());
+	fclose(file);
+	delete radiance;
+	
+	LuminancePixel *lum = new LuminancePixel();
+	float avLum, maxLum;
+	lum->calculate_luminance_pixel(image, &avLum, &maxLum);
+	printf("avLum=%f maxLum=%f\n", avLum, maxLum);
+	delete lum;
+
 	ToneMappingDrago03 *tone = new ToneMappingDrago03();
-	float avLum = 1;
-	float maxLum = 4567.45;
+	
 	unsigned int *pic = new unsigned int[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
 	tone->toneMapping_Drago03(image, &avLum, &maxLum, pic, 0.85);
+	
 
-	for(y=0; y<image->getHeight(); y++)
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	
+	image1._data = new unsigned char[image->getWidth() * image->getHeight() * 3];
+	image1._width = image->getWidth();
+	image1._height = image->getHeight();
+	for(int y = 0; y <image1._height; y++)
 	{
-		for(x=0; x<image->getWidth(); x++)
+		for(int x = 0; x < image1._width; x++)
 		{
-			int pos = (y * image->getWidth() + x) * 3;
-			printf("%d %d %d ", pic[pos + 0], pic[pos + 1], pic[pos + 2]);
+			image1._data[image->getWidth() * image->getHeight() * 0 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 0];
+			image1._data[image->getWidth() * image->getHeight() * 1 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 1];
+			image1._data[image->getWidth() * image->getHeight() * 2 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 2];
 		}
-		printf("\n");
 	}
+	image1.save("test.bmp");
+	
 }
 
 void testDebevec()
 {
-	Image<float> *image = new Image<float>(3);
-	image->setWidth(16);
-	image->setHeight(16);
-	unsigned int *ldr = new unsigned int[3 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS];
+	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
+	Image<unsigned char> *img3 = loadImage("IMG_6432.jpg");
+	Image<float> *image = new Image<float>(3, img1->getHeight(), img1->getWidth());
+
+	unsigned int *ldr = new unsigned int[3 * img1->getHeight() * img1->getWidth() * RGB_NUM_OF_CHANNELS];
 	int x,y;
 	for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			ldr[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			ldr[y * image->getWidth() * 3 + x * 3 + 1] = 1;
-			ldr[y * image->getWidth() * 3 + x * 3 + 2] = 1;
+			ldr[y * image->getWidth() * 3 + x * 3 + 0] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[y * image->getWidth() * 3 + x * 3 + 1] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[y * image->getWidth() * 3 + x * 3 + 2] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 			
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = 2;
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = 2;
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = 3;
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = 3;
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = 3;
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 		}
 	}
 	
 	GenerateHDRDebevec *genHDR = new GenerateHDRDebevec();
 	float *arrayofexptime = new float[3];
+	arrayofexptime[0] = 1.0 / 13.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	arrayofexptime[1] = 1.0 / 50.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	arrayofexptime[2] = 0.3 * 100.0 / 5.6 / 5.6 / 12.07488f;
 	float *Ir;
 	float *Ig;
 	float *Ib;
@@ -270,23 +283,44 @@ void testDebevec()
 
 
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+
+	FILE *output = NULL;
+	output = fopen("test1.hdr", "wb");
+	if (!output)perror("fopen");
+	if(output == NULL)
+	{
+		printf("NULL");
+	}
+	Radiance *out_radiance = new Radiance(output);
+	out_radiance->setFile(output);
+	out_radiance->writeFile(image);
+	fclose(output);
+
+	delete out_radiance;
 }
 
 void testScaled2()
 {
-	Image<unsigned char> *image = new Image<unsigned char>(3, 32, 16);
-	int x,y;
-	for(y=0; y<image->getHeight(); y++)
+	Image<unsigned char> *image = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *scaledImage = image->scaled2();
+
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	image1._data = new unsigned char[scaledImage->getWidth() * scaledImage->getHeight() * 3];
+	image1._width = scaledImage->getWidth();
+	image1._height = scaledImage->getHeight();
+	for(int y = 0; y <image1._height; y++)
 	{
-		for(x=0; x<image->getWidth(); x++)
+		for(int x = 0; x < image1._width; x++)
 		{
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = 1;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 2;
-			image->getImage()[y * image->getWidth() * 3 + x * 3 + 2] = 3;
-			//if(x == 5 && y == 5) image->getImage()[y * image->getWidth() * 3 + x * 3 + 1] = 4567.45f;
+			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 0 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 0];
+			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 1 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 1];
+			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 2 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 2];
+			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
 		}
+		//printf("\n");
 	}
-	image->scaled2();
+	
+	image1.save("test.bmp");
 }
 
 void testImageAligne() 
@@ -609,20 +643,21 @@ void testFile()
 	out_radiance->writeFile(image);
 	fclose(output);
 
-	delete radiance;
+	delete out_radiance;
 }
 
 
 int main(int argc, char **argv)
 {
-	testFile();
-	
-	//testDebevec();
-	//testDrago03();
-	//testLuminancePixel();
 	//testRGB2RGBE();
 	//testRGBE2RGB();
+	
+	//testFile();
+	//testDrago03();
+	//testLuminancePixel(); //nije bas testirano, mada radi Drago03 sa tim
 	//testScaled2();
+	
+	testDebevec();
 	//testImageAligne();
 	//testAligneRealImage();
 	//testAlignJpegPic();

@@ -55,7 +55,7 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			int G_lower = cl_ldr_img[cl_i_lower[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
 			int G_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 1];//qGreen(* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
 			int B_lower = cl_ldr_img[cl_i_lower[i] * width * height * 3 + j * 3 + 2];//qBlue (* ( (QRgb*)( (listLDR->at(i_lower[i]) )->bits() ) + j ) );
-			int B_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 3];//qBlue (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
+			int B_upper = cl_ldr_img[cl_i_upper[i] * width * height * 3 + j * 3 + 2];//qBlue (* ( (QRgb*)( (listLDR->at(i_upper[i]) )->bits() ) + j ) );
 
 			//if at least one of the color channel's values are in the bright "not-trusted zone" and we have min exposure time
 			if ((mR > maxM || mG > maxM || mB > maxM) && (ti < minti))
