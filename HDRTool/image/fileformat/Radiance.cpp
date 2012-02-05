@@ -112,7 +112,7 @@ void  Radiance::rgbe2rgb(const Trgbe_pixel rgbe, float exposure, float *r, float
 	if( rgbe.e!=0 )     // a non-zero pixel
 	{
 		int e = rgbe.e - (int)(128 + 8);
-		double f = ldexp( 1.0, e ) /* WHITE_EFFICACY / exposure*/;
+		double f = ldexp( 1.0, e ) * WHITE_EFFICACY / exposure;
 		
 		*r = (float)(rgbe.r * f);
 		*g = (float)(rgbe.g * f);
@@ -145,7 +145,7 @@ void Radiance::readRadianceData(Image<float> *image)
 		{
 			//--- simple scanline (not rle)
 			size_t rez = fread(scanline + 4, sizeof(Trgbe), 4 * image->getWidth() - 4, imageFile);
-			printf("fread rez = %d\n");
+			//printf("fread rez = %d\n");
 			if( rez != 4 * image->getWidth() - 4 )
 			{
 				printf( "RGBE: not enough data to read in the simple format.\n" );
@@ -194,7 +194,7 @@ void Radiance::readRadianceData(Image<float> *image)
 				//printf("%d %d %d %d | ", scanline[x + image->getWidth() * 0], scanline[x + image->getWidth() * 1], 
 				//	scanline[x + image->getWidth() * 2], scanline[x + image->getWidth() * 3]);
 			}
-			//printf("\n");
+			printf("\n");
 		}
 		printf("end with reading line %d \n", y);
 
@@ -208,9 +208,9 @@ void Radiance::readRadianceData(Image<float> *image)
 		unsigned int x;
 		for(x = 0; x < image->getWidth(); x++)
 		{
-			float r = -134;
-			float g = -134;
-			float b = -134;
+			float r;// = -134;
+			float g;// = -134;
+			float b;// = -134;
 			rgbe2rgb(img_rgbe[y * image->getWidth() + x], image->getExposure(), &r, &g, &b);
 			
 			image->getImage()[y * image->getWidth() * 3 + x * 3 + 0] = r;
@@ -242,13 +242,19 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 	{
 		Trgbe p[2];
 		size_t rez = fread(p, sizeof(p), 1, imageFile);
-		//printf("fread rez = %d\n", rez);
-		//printf(" %d %d", p[0], p[1]);
+		int e = ferror(imageFile);
+		if(e)
+			printf("Error %d test\n", e);
+
+		if(feof(imageFile))
+			printf("EOF \n");
+		printf("fread rez p = %d\n", rez);
+		printf(" %d %d", p[0], p[1]);
 		if( p[0]>128 )
 		{
 			// a run
 			int run_len = p[0]-128;
-			if(run_len + peek > size) run_len = size - peek; //TEST
+			//if(run_len + peek > size) run_len = size - peek; //TEST
 			while( run_len>0 )
 			{
 				scanline[peek++] = p[1];
@@ -263,9 +269,12 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 			int nonrun_len = p[0]-1;
 			if( nonrun_len>0 )
 			{
-				if(peek + nonrun_len > size) nonrun_len = size - peek; //TEST
+				//if(peek + nonrun_len > size) nonrun_len = size - peek; //TEST
 				size_t rez1 = fread(scanline+peek, sizeof(*scanline), nonrun_len, imageFile);
-				//printf("fread rez1 = %d\n", rez1);
+				int e = ferror(imageFile);
+		if(e)
+			printf("Error. %d test\n", e);
+				printf("fread rez non_run = %d\n", rez1);
 				peek += nonrun_len;
 			}
 		}

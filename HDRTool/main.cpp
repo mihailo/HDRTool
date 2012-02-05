@@ -451,7 +451,7 @@ void testAligneRealImage()
 void testVertical()
 {
 	//CImg<unsigned char> image1("IMG_3582.jpg");
-	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+/*	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
 	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
 	Image<unsigned char> *img3 = loadImage("IMG_3584.jpg");;
 	
@@ -518,10 +518,38 @@ void testVertical()
 	r->responseLinear(Ig, M);
 	r->responseLinear(Ib, M);
 
-
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+*/
+
+	
+	
+	FILE *file = fopen("proba_small.hdr", "rb");
+	Radiance *radiance = new Radiance(file);
+	Image<float> *image = radiance->readFile();
+	printf("exposure: %f\n", image->getExposure());
+	printf("height: %d\n", image->getHeight());
+	printf("width: %d\n", image->getWidth());
+	fclose(file);
+	delete radiance;
 
 
+	unsigned int x,y;
+	for(y=0; y<image->getHeight(); y++)
+	{
+		x = 0;
+		/*for(x=0; x<image->getWidth(); x++)
+		{
+			printf("%f %f %f ", image->getImage()[y * image->getWidth() * 3 + x * 3 + 0], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1],
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2]);
+		}*/
+		/*printf("%f %f %f ", image->getImage()[y * image->getWidth() * 3 + x * 3 + 0], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1],
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2]);*/
+		//printf("\n");
+	}
+	
+	
 	LuminancePixel *lum = new LuminancePixel();
 	float avLum, maxLum;
 	lum->calculate_luminance_pixel(image, &avLum, &maxLum);
@@ -538,13 +566,17 @@ void testVertical()
 	
 	
 	CImg<unsigned char> image1("IMG_3582.jpg");
+	
+	image1._data = new unsigned char[image->getWidth() * image->getHeight() * 3];
+	image1._width = image->getWidth();
+	image1._height = image->getHeight();
 	for(int y = 0; y <image1._height; y++)
 	{
 		for(int x = 0; x < image1._width; x++)
 		{
-			image1._data[image1._width * image1._height * 0 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 0];
-			image1._data[image1._width * image1._height * 1 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 1];
-			image1._data[image1._width * image1._height * 2 + y * image1._width + x] = pic[y * image->getWidth() * 3 + x * 3 + 2];
+			image1._data[image->getWidth() * image->getHeight() * 0 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 0];
+			image1._data[image->getWidth() * image->getHeight() * 1 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 1];
+			image1._data[image->getWidth() * image->getHeight() * 2 + y * image->getWidth() + x] = pic[y * image->getWidth() * 3 + x * 3 + 2];
 			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
 		}
 		//printf("\n");
