@@ -415,10 +415,7 @@ void Radiance::writeFile(Image<float> *image)
 			scanlineG[y * image->getWidth() + x] = p.g;
 			scanlineB[y * image->getWidth() + x] = p.b;
 			scanlineE[y * image->getWidth() + x] = p.e;
-
-			printf("%d %d %d %d |", p.r, p.g, p.b, p.e);
 		}
-		printf("\n");
 	}
 	
 	//float time = getTime(timer_id);

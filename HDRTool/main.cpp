@@ -396,7 +396,7 @@ void testAlignJpegPic()
 
 void testAligneRealImage() 
 {
-	FILE *file = fopen("clocks.hdr", "r");
+	FILE *file = fopen("clocks.hdr", "rb");
 	Radiance *radiance = new Radiance(file);
 	Image<float> *image = radiance->readFile();
 	printf("exposure: %f\n", image->getExposure());
@@ -587,102 +587,36 @@ void testVertical()
 }
 void testFile()
 {
-	/*FILE *file = fopen("clocks.hdr", "r");
-	//FILE *file = fopen("proba_cuda1.hdr", "r");
-	Radiance *radiance = new Radiance(file);
-	Image *image = radiance->readFile();
-	printf("exposure: %f\n", image->getExposure());
-	printf("height: %d\n", image->getHeight());
-	printf("width: %d\n", image->getWidth());
-	fclose(file);
-*/
-/*	Image *image = new Image();
-	image->setExposure(1.1);
-	image->setHeight(2);
-	image->setWidth(150);
-
-	int i,j;
-	for(i=0; i<2; i++)
-	{
-		for(j=0; j<150; j++)
-		{
-			if(j<2) {
-				image->getHDR()[i*150*3 + j*3 + 0] = j;
-				image->getHDR()[i*150*3 + j*3 + 1] = j;
-				image->getHDR()[i*150*3 + j*3 + 2] = j;
-			}
-			else
-			{
-				image->getHDR()[i*150*3 + j*3 + 0] = 1;
-				image->getHDR()[i*150*3 + j*3 + 1] = 2;
-				image->getHDR()[i*150*3 + j*3 + 2] = 3;
-			}
-			if(j>130)
-			{
-				image->getHDR()[i*150*3 + j*3 + 0] = j;
-			image->getHDR()[i*150*3 + j*3 + 1] = j;
-			image->getHDR()[i*150*3 + j*3 + 2] = j;
-			}
-
-		}
-	}
-
-	
-
-	*/
-	FILE *file = fopen("proba_cuda1.hdr", "r");
+	FILE *file = fopen("clocks.hdr", "rb");
+	//FILE *file = fopen("proba_cuda1.hdr", "rb");
 	Radiance *radiance = new Radiance(file);
 	Image<float> *image = radiance->readFile();
 	printf("exposure: %f\n", image->getExposure());
 	printf("height: %d\n", image->getHeight());
 	printf("width: %d\n", image->getWidth());
 	fclose(file);
+	delete radiance;
 
-
-	/*FILE *output = NULL;
-	output = fopen("test1.hdr", "w");
+	FILE *output = NULL;
+	output = fopen("test1.hdr", "wb");
 	if (!output)perror("fopen");
 	if(output == NULL)
 	{
 		printf("NULL");
 	}
-	//Radiance *radiance = new Radiance(output);
-	radiance->setFile(output);
-	radiance->writeFile(image);
-	fclose(output);*/
+	Radiance *out_radiance = new Radiance(output);
+	out_radiance->setFile(output);
+	out_radiance->writeFile(image);
+	fclose(output);
 
-	//delete radiance;
-
-	/*Radiance *rad = new Radiance(output);
-
-	Trgbe_pixel * pixel = new Trgbe_pixel();
-	pixel->r = 2;
-	pixel->g = 3;
-	pixel->b = 4;
-	pixel->e = 204;
-	
-	float r, g, b;
-	rad->rgbe2rgb(*pixel, 1.0,&r, &g, &b);
-	printf("%f %f %f\n", r, g, b);
-		
-	rad->rgb2rgbe(r,g,b,pixel);
-	unsigned int r_int = pixel->r;
-	unsigned int g_int = pixel->g;
-	unsigned int b_int = pixel->b;
-	unsigned int e_int = pixel->e;
-	printf("%d %d %d %d\n", pixel->r, pixel->g, pixel->b, pixel->e);
-
-	rad->rgbe2rgb(*pixel, 1.0, &r, &g, &b);
-	printf("%f %f %f\n", r, g, b);
-
-	rad->rgb2rgbe(r,g,b,pixel);
-	printf("%d %d %d %d\n", pixel->r, pixel->g, pixel->b, pixel->e);*/
+	delete radiance;
 }
 
 
 int main(int argc, char **argv)
 {
-	//testFile();
+	testFile();
+	
 	//testDebevec();
 	//testDrago03();
 	//testLuminancePixel();
@@ -692,7 +626,7 @@ int main(int argc, char **argv)
 	//testImageAligne();
 	//testAligneRealImage();
 	//testAlignJpegPic();
-	testVertical();
+	//testVertical();
 
 	printf("\n\nThe End\n\n");
 
