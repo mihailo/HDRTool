@@ -17,6 +17,8 @@
 #include "genhdr/Responses.h"
 #include "imagealign/ImageAlign.h"
 #include "CImg.h"
+#include <math.h>
+#include <iso646.h>
 
 using namespace cimg_library;
 
@@ -232,36 +234,59 @@ void testDrago03()
 
 void testDebevec()
 {
-	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
-	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
-	Image<unsigned char> *img3 = loadImage("IMG_6432.jpg");
+	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
+	Image<unsigned char> *img3 = loadImage("IMG_3584.jpg");
 	Image<float> *image = new Image<float>(3, img1->getHeight(), img1->getWidth());
 
-	unsigned int *ldr = new unsigned int[3 * img1->getHeight() * img1->getWidth() * RGB_NUM_OF_CHANNELS];
+	unsigned char *ldr = new unsigned char[3 * img1->getHeight() * img1->getWidth() * RGB_NUM_OF_CHANNELS];
 	int x,y;
 	for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			ldr[y * image->getWidth() * 3 + x * 3 + 0] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
-			ldr[y * image->getWidth() * 3 + x * 3 + 1] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
-			ldr[y * image->getWidth() * 3 + x * 3 + 2] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+			int numI = 0;
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 0] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 1] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 2] = img1->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 			
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
-			ldr[image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+			numI = 1 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 0] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 1] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 2] = img2->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 0] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 1] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
-			ldr[2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS + y * image->getWidth() * 3 + x * 3 + 2] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
+			numI = 2 * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 0] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 0];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 1] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 1];
+			ldr[numI + y * image->getWidth() * 3 + x * 3 + 2] = img3->getImage()[y * image->getWidth() * 3 + x * 3 + 2];
 		}
 	}
+
+	/*for(int k = 0; k < 3; k++)
+	{
+		for(y=0; y<image->getHeight(); y++)
+		{
+			for(x=0; x<image->getWidth(); x++)
+			{
+				printf("%d %d %d ", ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 0], 
+					ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 1], 
+					ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 2]);
+			}
+			printf("\n");
+		}
+	}*/
 	
 	GenerateHDRDebevec *genHDR = new GenerateHDRDebevec();
 	float *arrayofexptime = new float[3];
-	arrayofexptime[0] = 1.0 / 13.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
-	arrayofexptime[1] = 1.0 / 50.0 * 100.0 / 5.6 / 5.6 / 12.07488f;
-	arrayofexptime[2] = 0.3 * 100.0 / 5.6 / 5.6 / 12.07488f;
+	float time1, time2, time3, iso, fnumber;
+	time1 = 1.0 / 13.0;
+	time2 = 1.0 / 50.0;
+	time3 = 0.3;
+	iso = 100.0;
+	fnumber = 5.6;
+	arrayofexptime[0] = ((time1 * iso) / (fnumber * fnumber * 12.07488f));
+	arrayofexptime[1] = ((time2 * iso) / (fnumber * fnumber * 12.07488f));
+	arrayofexptime[2] = ((time3 * iso) / (fnumber * fnumber * 12.07488f));
 	float *Ir;
 	float *Ig;
 	float *Ib;
@@ -281,8 +306,18 @@ void testDebevec()
 	r->responseLinear(Ig, M);
 	r->responseLinear(Ib, M);
 
-
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
+
+	/*for(y=0; y<image->getHeight(); y++)
+	{
+		for(x=0; x<image->getWidth(); x++)
+		{
+			printf("%f %f %f ", image->getImage()[y * image->getWidth() * 3 + x * 3 + 0], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1], 
+				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2]);
+		}
+		printf("\n");
+	}*/
 
 	FILE *output = NULL;
 	output = fopen("test1.hdr", "wb");
@@ -315,9 +350,8 @@ void testScaled2()
 			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 0 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 0];
 			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 1 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 1];
 			image1._data[scaledImage->getWidth() * scaledImage->getHeight() * 2 + y * scaledImage->getWidth() + x] = scaledImage->getImage()[y * scaledImage->getWidth() * 3 + x * 3 + 2];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
 		}
-		//printf("\n");
+		
 	}
 	
 	image1.save("test.bmp");
@@ -385,34 +419,15 @@ void testImageAligne()
 
 void testAlignJpegPic()
 {
-	CImg<unsigned char> image1("IMG_3582.jpg");
-	Image<unsigned char> *img1 = new Image<unsigned char>(3, image1._height, image1._width);
-	for(int y = 0; y <image1._height; y++)
-	{
-		for(int x = 0; x < image1._width; x++)
-		{
-			img1->getImage()[y * image1._width * 3 + x * 3 + 0] = image1._data[image1._width * image1._height * 0 + y * image1._width + x];
-			img1->getImage()[y * image1._width * 3 + x * 3 + 1] = image1._data[image1._width * image1._height * 1 + y * image1._width + x];
-			img1->getImage()[y * image1._width * 3 + x * 3 + 2] = image1._data[image1._width * image1._height * 2 + y * image1._width + x];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
-		}
-		//printf("\n");
-	}
+	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3582.jpg");
 
-	CImg<unsigned char> image2("IMG_3583.jpg");
-	Image<unsigned char> *img2 = new Image<unsigned char>(3, image2._height, image2._width);
-	for(int y = 0; y <image2._height; y++)
-	{
-		for(int x = 0; x < image2._width; x++)
-		{
-			img2->getImage()[y * image2._width * 3 + x * 3 + 0] = image2._data[image2._width * image2._height * 0 + y * image2._width + x];
-			img2->getImage()[y * image2._width * 3 + x * 3 + 1] = image2._data[image2._width * image2._height * 1 + y * image2._width + x];
-			img2->getImage()[y * image2._width * 3 + x * 3 + 2] = image2._data[image2._width * image2._height * 2 + y * image2._width + x];
-			//printf("%d %d %d ", img1->getImage()[y * image._width * 3 + x * 3 + 0], img1->getImage()[y * image._width * 3 + x * 3 + 1], img1->getImage()[y * image._width * 3 + x * 3 + 2]);
-		}
-		//printf("\n");
-	}
+	/*unsigned char jedan = 255;
+	unsigned char nula = 0;
 
+	printf("XOR %d\n", jedan xor nula);
+	printf("and %d\n", jedan and nula);*/
+	
 	ImageAlign *align = new ImageAlign();
 	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
 
@@ -426,6 +441,24 @@ void testAlignJpegPic()
 	image_list[0] = img1;
 	image_list[1] = img2;
 	align->mtb_alignment(2, image_list, image_bool);
+	/*Image<unsigned char> *in = new Image<unsigned char>(1, 2, 2);
+	Image<unsigned char> *out = new Image<unsigned char>(1, 2, 2);
+	for(i = 0; i < 2; i++)
+	{
+		for(int j = 0; j < 2; j++)
+		{
+			in->getImage()[i * 2 + j] = i * 2 + j;
+		}
+	}
+	align->shiftimage(in, -1, -1, out);
+	for(i = 0; i < 2; i++)
+	{
+		for(int j = 0; j < 2; j++)
+		{
+			printf("%d ", out->getImage()[i * 2 + j]);
+		}
+		printf("\n");
+	}*/
 }
 
 void testAligneRealImage() 
@@ -657,10 +690,10 @@ int main(int argc, char **argv)
 	//testLuminancePixel(); //nije bas testirano, mada radi Drago03 sa tim
 	//testScaled2();
 	
-	testDebevec();
+	//testDebevec();
 	//testImageAligne();
 	//testAligneRealImage();
-	//testAlignJpegPic();
+	testAlignJpegPic();
 	//testVertical();
 
 	printf("\n\nThe End\n\n");

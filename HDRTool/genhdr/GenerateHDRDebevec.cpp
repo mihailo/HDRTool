@@ -17,7 +17,7 @@ GenerateHDRDebevec::~GenerateHDRDebevec()
 	delete core;
 }
 
-void GenerateHDRDebevec::generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img)
+void GenerateHDRDebevec::generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned char *ldr_img)
 {
 	image = img;
 	
@@ -101,7 +101,7 @@ void GenerateHDRDebevec::allocateOpenCLMemory()
 
 
 	// Allocate the OpenCL buffer memory objects for source and result on the device MEM
-	unsigned int size_ldr = num_ldr * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS * sizeof(unsigned int);
+	unsigned int size_ldr = num_ldr * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS * sizeof(unsigned char);
 	cl_ldr_img = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		size_ldr, NULL, &ciErr1);
 
@@ -139,7 +139,7 @@ void GenerateHDRDebevec::allocateOpenCLMemory()
 		size, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
 
-	unsigned int size_hdrpic = sizeof(unsigned int) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
+	unsigned int size_hdrpic = sizeof(unsigned char) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
 	cl_hdrpic = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		size_hdrpic, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
@@ -200,7 +200,7 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
     // Asynchronous write of data to GPU device
-	unsigned int size_ldr = num_ldr * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS * sizeof(unsigned int);
+	unsigned int size_ldr = num_ldr * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS * sizeof(unsigned char);
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_ldr_img, CL_TRUE, 0, 
 		size_ldr, ldr, 0, NULL, NULL);
 	unsigned int size_array = num_ldr * sizeof(float);
@@ -232,7 +232,7 @@ void GenerateHDRDebevec::getDataFromOpenCLMemory()
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hdr, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
-	unsigned int size_hdrpic = sizeof(unsigned int) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
+	unsigned int size_hdrpic = sizeof(unsigned char) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hdrpic, CL_TRUE, 0, 
 		size_hdrpic, image->getPreviewImage(), 0, NULL, NULL);	
     logFile("clEnqueueReadBuffer ...\n\n"); 

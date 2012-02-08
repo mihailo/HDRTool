@@ -248,8 +248,8 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 
 		if(feof(imageFile))
 			printf("EOF \n");
-		printf("fread rez p = %d\n", rez);
-		printf(" %d %d", p[0], p[1]);
+		//printf("fread rez p = %d\n", rez);
+		//printf(" %d %d", p[0], p[1]);
 		if( p[0]>128 )
 		{
 			// a run
@@ -272,9 +272,8 @@ void Radiance::RLERead(Trgbe* scanline, int size) //Run-length encoding
 				//if(peek + nonrun_len > size) nonrun_len = size - peek; //TEST
 				size_t rez1 = fread(scanline+peek, sizeof(*scanline), nonrun_len, imageFile);
 				int e = ferror(imageFile);
-		if(e)
-			printf("Error. %d test\n", e);
-				printf("fread rez non_run = %d\n", rez1);
+				if(e) printf("Error. %d test\n", e);
+				//printf("fread rez non_run = %d\n", rez1);
 				peek += nonrun_len;
 			}
 		}

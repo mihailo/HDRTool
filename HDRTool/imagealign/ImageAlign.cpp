@@ -5,6 +5,10 @@
 #include "../utils/Consts.h"
 #include "../image/Image.h"
 #include <iso646.h>
+#include "../CImg.h"
+
+using namespace cimg_library;
+
 
 ImageAlign::ImageAlign(void)
 {
@@ -148,6 +152,22 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 	Image<unsigned char> *img2mask_shifted = setbitmap(img2->getHeight(), img2->getWidth());
 	Image<unsigned char> *diff             = setbitmap(img2->getHeight(), img2->getWidth());
 
+	//DEBUG
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	image1._data = new unsigned char[img1mask->getWidth() * img1mask->getHeight() * 3];
+	image1._width = img1mask->getWidth();
+	image1._height = img1mask->getHeight();
+	for(int y = 0; y <image1._height; y++)
+	{
+		for(int x = 0; x < image1._width; x++)
+		{
+			image1._data[img1mask->getWidth() * img1mask->getHeight() * 0 + y * img1mask->getWidth() + x] = img1mask->getImage()[y * img1mask->getWidth() + x];
+			image1._data[img1mask->getWidth() * img1mask->getHeight() * 1 + y * img1mask->getWidth() + x] = img1mask->getImage()[y * img1mask->getWidth() + x];
+			image1._data[img1mask->getWidth() * img1mask->getHeight() * 2 + y * img1mask->getWidth() + x] = img1mask->getImage()[y * img1mask->getWidth() + x];
+		}
+	}
+	image1.save("test.bmp");
+
 	int minerr = img1->getWidth() * img2->getHeight();
 	for(int i = -1; i <= 1; i++) 
 	{
@@ -181,18 +201,20 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 void ImageAlign::shiftimage(Image<unsigned char> *in, const int dx, const int dy, Image<unsigned char> *out)
 {
 	//obe su kao grayscale
+	int width = in->getWidth();
+	int height = in->getHeight();
 	out->fill(0);
 	int i;
-	for(i = 0; i < in->getHeight(); i++) {
+	for(i = 0; i < height; i++) {
 		if( (i+dy) < 0 ) continue;
-		if( (i+dy) >= in->getHeight()) break;
+		if( (i+dy) >= height) break;
 		//const unsigned char *inp = in->scanLine(i);
 		//unsigned char *outp = out->scanLine(i+dy);
-		unsigned int j;
-		for(j = 0; j < in->getWidth(); j++) 
+		int j;
+		for(j = 0; j < width; j++) 
 		{
-			if( (j+dx) >= in->getWidth()) break;
-			if( (j+dx) >= 0 ) out->getImage()[i * in->getWidth() + j + dx] = in->getImage()[i * in->getWidth() + j]; //outp[j+dx] = *inp;
+			if( (j + dx) >= width) break;
+			if( (j+dx) >= 0 ) out->getImage()[(i + dy) * width + j + dx] = in->getImage()[i * width + j]; //outp[j+dx] = *inp;
 			//inp++;
 		}
 	}

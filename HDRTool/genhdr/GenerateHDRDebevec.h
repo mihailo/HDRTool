@@ -18,7 +18,7 @@ private:
 	float *w;
 	int m, max_m, min_m;
 	int num_ldr;
-	unsigned int *ldr;
+	unsigned char *ldr;
 	
 	cl_mem cl_ldr_img;
 	cl_mem cl_array_of_exp_time;
@@ -37,7 +37,7 @@ public:
 	void getDataFromOpenCLMemory();
 	void clearDeviceMemory();
 
-	void generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned int *ldr_img);
+	void generateHDR(Image<float> *img, float *arrayofexptime, float *Ir, float *Ig, float* Ib, float *W, int M, int numimg, unsigned char *ldr_img);
 
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	

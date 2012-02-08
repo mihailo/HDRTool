@@ -5,12 +5,12 @@ float clamps( const float v, const float min, const float max )
   	return v;
 }
 __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const height,
-								   unsigned int N, __global unsigned int *cl_ldr_img,
+								   unsigned int N, __global unsigned char *cl_ldr_img,
 									__global float *cl_arrayofexptime, 
 									__global int *cl_i_lower, __global int *cl_i_upper, 
 									int maxM, int minM, __global float *cl_w, 
 									__global float *cl_Ir, __global float *cl_Ig, __global float *cl_Ib,
-									__global float *cl_hdr, __global unsigned int *cl_hdrpic)
+									__global float *cl_hdr, __global unsigned char *cl_hdrpic)
 {
 	int i;
 	int y = get_global_id(0);
@@ -101,7 +101,7 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			// mA assumed to handle de-ghosting masks
 			// mA values assumed to be in [0, 255]
 			// mA=0 assummed to mean that the pixel should be excluded
-			float w_average = mA * (cl_w[mR] + cl_w[mG] + cl_w[mB]) / (3.0f * 255.0f);
+			float w_average = (float)mA * (cl_w[mR] + cl_w[mG] + cl_w[mB]) / (3.0f * 255.0f);
 			sumR += w_average * cl_Ir[mR] / (float)ti;
 			divR += w_average;
 			sumG += w_average * cl_Ig[mG] / (float)ti;
@@ -139,9 +139,9 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			cl_hdr[j * 3 + 1] = sumG/divG;
 			cl_hdr[j * 3 + 2] = sumB/divB;
 
-			cl_hdrpic[j * 3 + 0] = (unsigned int)clamps(cl_hdr[j * 3 + 0], 0.0f, 255.0f);
-			cl_hdrpic[j * 3 + 1] = (unsigned int)clamps(cl_hdr[j * 3 + 1], 0.0f, 255.0f);
-			cl_hdrpic[j * 3 + 2] = (unsigned int)clamps(cl_hdr[j * 3 + 2], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 0] = (unsigned char)clamps(cl_hdr[j * 3 + 0], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 1] = (unsigned char)clamps(cl_hdr[j * 3 + 1], 0.0f, 255.0f);
+			cl_hdrpic[j * 3 + 2] = (unsigned char)clamps(cl_hdr[j * 3 + 2], 0.0f, 255.0f);
 		}
 		else
 		{
@@ -155,9 +155,9 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			cl_hdr[j * 3 + 1] = 0.0f;
 			cl_hdr[j * 3 + 2] = 0.0f;
 
-			cl_hdrpic[j * 3 + 0] = (unsigned int)cl_hdr[j * 3 + 0];
-			cl_hdrpic[j * 3 + 1] = (unsigned int)cl_hdr[j * 3 + 1];
-			cl_hdrpic[j * 3 + 2] = (unsigned int)cl_hdr[j * 3 + 2];
+			cl_hdrpic[j * 3 + 0] = (unsigned char)cl_hdr[j * 3 + 0];
+			cl_hdrpic[j * 3 + 1] = (unsigned char)cl_hdr[j * 3 + 1];
+			cl_hdrpic[j * 3 + 2] = (unsigned char)cl_hdr[j * 3 + 2];
 		}
 	}
 }
