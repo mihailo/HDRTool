@@ -20,6 +20,7 @@
 #include <math.h>
 #include <iso646.h>
 
+
 using namespace cimg_library;
 
 
@@ -287,6 +288,13 @@ void testDebevec()
 	arrayofexptime[0] = ((time1 * iso) / (fnumber * fnumber * 12.07488f));
 	arrayofexptime[1] = ((time2 * iso) / (fnumber * fnumber * 12.07488f));
 	arrayofexptime[2] = ((time3 * iso) / (fnumber * fnumber * 12.07488f));
+
+	for(x = 0; x < 3; x++)
+	{
+		printf("%f ", arrayofexptime[x]);
+	}
+	printf("\n");
+
 	float *Ir;
 	float *Ig;
 	float *Ib;
@@ -306,6 +314,18 @@ void testDebevec()
 	r->responseLinear(Ig, M);
 	r->responseLinear(Ib, M);
 
+	/*for(x = 0; x < M; x++)
+	{
+		printf("%f %f %f ", Ir[x], Ig[x], Ib[x]);
+	}
+	printf("\n");
+
+	for(x = 0; x < M; x++)
+	{
+		printf("%f ", W[x]);
+	}
+	printf("\n");*/
+
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
 
 	/*for(y=0; y<image->getHeight(); y++)
@@ -317,10 +337,11 @@ void testDebevec()
 				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2]);
 		}
 		printf("\n");
+		Sleep(500);
 	}*/
 
 	FILE *output = NULL;
-	output = fopen("test1.hdr", "wb");
+	output = fopen("testDebevec.hdr", "wb");
 	if (!output)perror("fopen");
 	if(output == NULL)
 	{
@@ -419,8 +440,8 @@ void testImageAligne()
 
 void testAlignJpegPic()
 {
-	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
-	Image<unsigned char> *img2 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
 
 	/*unsigned char jedan = 255;
 	unsigned char nula = 0;
@@ -689,13 +710,15 @@ int main(int argc, char **argv)
 	//testDrago03();
 	//testLuminancePixel(); //nije bas testirano, mada radi Drago03 sa tim
 	//testScaled2();
+	//testAlignJpegPic();
 	
-	//testDebevec();
+	testDebevec();
 	//testImageAligne();
 	//testAligneRealImage();
-	testAlignJpegPic();
 	//testVertical();
 
+	
+	
 	printf("\n\nThe End\n\n");
 
 	system("Pause");

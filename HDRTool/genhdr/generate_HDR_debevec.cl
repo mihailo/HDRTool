@@ -12,7 +12,7 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 									__global float *cl_Ir, __global float *cl_Ig, __global float *cl_Ib,
 									__global float *cl_hdr, __global unsigned char *cl_hdrpic)
 {
-	int i;
+	//int i;
 	int y = get_global_id(0);
 	int x = get_global_id(1);
 	int j = y * width + x;
@@ -38,7 +38,7 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 		int index_for_blackB = -1;
 
 		// for all exposures
-		for(i = 0; i < N; i++)
+		for(int i = 0; i < N; i++)
 		{
 			//pick the 3 channel values + alpha
 			int mR = cl_ldr_img[i * width * height * 3 + j * 3 + 0];
@@ -101,7 +101,7 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 			// mA assumed to handle de-ghosting masks
 			// mA values assumed to be in [0, 255]
 			// mA=0 assummed to mean that the pixel should be excluded
-			float w_average = (float)mA * (cl_w[mR] + cl_w[mG] + cl_w[mB]) / (3.0f * 255.0f);
+			float w_average = mA * (cl_w[mR] + cl_w[mG] + cl_w[mB]) / (3.0f * 255.0f);
 			sumR += w_average * cl_Ir[mR] / (float)ti;
 			divR += w_average;
 			sumG += w_average * cl_Ig[mG] / (float)ti;
@@ -131,10 +131,6 @@ __kernel void generate_hdri_pixels(unsigned int const width, unsigned int const 
 
 		if(divR != 0.0f && divG != 0.0f && divB != 0.0f)
 		{
-			//Rout_cuda[j] = sumR/divR;
-			//Gout_cuda[j] = sumG/divG;
-			//Bout_cuda[j] = sumB/divB;
-
 			cl_hdr[j * 3 + 0] = sumR/divR;
 			cl_hdr[j * 3 + 1] = sumG/divG;
 			cl_hdr[j * 3 + 2] = sumB/divB;

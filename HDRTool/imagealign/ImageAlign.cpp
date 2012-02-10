@@ -153,7 +153,7 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 	Image<unsigned char> *diff             = setbitmap(img2->getHeight(), img2->getWidth());
 
 	//DEBUG
-	CImg<unsigned char> image1("IMG_3582.jpg");
+	/*CImg<unsigned char> image1("IMG_3582.jpg");
 	image1._data = new unsigned char[img1mask->getWidth() * img1mask->getHeight() * 3];
 	image1._width = img1mask->getWidth();
 	image1._height = img1mask->getHeight();
@@ -166,7 +166,7 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 			image1._data[img1mask->getWidth() * img1mask->getHeight() * 2 + y * img1mask->getWidth() + x] = img1mask->getImage()[y * img1mask->getWidth() + x];
 		}
 	}
-	image1.save("test.bmp");
+	image1.save("test.bmp");*/
 
 	int minerr = img1->getWidth() * img2->getHeight();
 	for(int i = -1; i <= 1; i++) 
@@ -225,7 +225,7 @@ void ImageAlign::setThreshold(Image<unsigned char> *in, const int threshold, con
 			Image<unsigned char> *threshold_out, Image<unsigned char> *mask_out)
 {
 	unsigned int i;
-	printf("threshold\n");
+	//printf("threshold\n");
 	for(i = 0; i < in->getHeight(); i++) 
 	{
 		//const unsigned char *inp = in->scanLine(i);
@@ -276,7 +276,7 @@ void ImageAlign::XORimages(Image<unsigned char> *img1, Image<unsigned char> *mas
 
 long ImageAlign::sumimage(Image<unsigned char> *img)
 {
-	printf("sumimage\n");
+	//printf("sumimage\n");
 	long ttl  = 0;
 	unsigned int i;
 	for(i = 0; i < img->getHeight(); i++) 
@@ -290,7 +290,7 @@ long ImageAlign::sumimage(Image<unsigned char> *img)
 		}
 		//printf("\n");
 	}
-	printf("ttl = %d\n", ttl);
+	//printf("ttl = %d\n", ttl);
 	return ttl;
 }
 
@@ -322,19 +322,19 @@ void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, dou
 		}
 		//printf("\n");
 	}
-	printf("%d %d \n", in->getHeight(), in->getWidth());
+	//printf("%d %d \n", in->getHeight(), in->getWidth());
 	double size = in->getHeight() * in->getWidth();
-	printf("%e \n", size);
+	//printf("%e \n", size);
 	double w = 1.0/size;
-	printf("%e \n", w);
+	//printf("%e \n", w);
 	cdf[0] = w * (double)hist[0];
-	printf("%f ", cdf[0]);
+	//printf("%f ", cdf[0]);
 	for(i = 1; i < 256; i++) 
 	{
 		cdf[i] = (double)cdf[i-1] + w * (double)hist[i];
-		printf("%f ", cdf[i]);
+		//printf("%f ", cdf[i]);
 	}
-	printf("\n");
+	//printf("\n");
 	return;
 }
 
@@ -342,10 +342,5 @@ void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, dou
 Image<unsigned char>* ImageAlign::setbitmap(const unsigned int height, const unsigned int width)
 {
 	Image<unsigned char> *img = new Image<unsigned char>(3, height, width);
-	//ili 0 ili 255 treba provaliti gde se poziva!!!
-	//QVector<QRgb> binaryColorTable;
-	//binaryColorTable.append(qRgb(0,0,0));
-	//binaryColorTable.append(qRgb(255,255,255));
-	//img->setColorTable(binaryColorTable);
 	return img;
 }

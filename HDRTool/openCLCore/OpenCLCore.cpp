@@ -88,11 +88,11 @@ void OpenCLCore::createKernel()
     }
 
     // Build the program with 'mad' Optimization option
-    #ifdef MAC
+    /*#ifdef MAC
         char* flags = "-cl-fast-relaxed-math -DMAC";
     #else
         char* flags = "-cl-fast-relaxed-math";
-    #endif
+    #endif*/
     clError = clBuildProgram(cpProgram, 0, NULL, NULL, NULL, NULL);
     logFile("clBuildProgram...\n"); 
     if (clError != CL_SUCCESS)
