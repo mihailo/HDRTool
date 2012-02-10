@@ -318,13 +318,13 @@ void testDebevec()
 	{
 		printf("%f %f %f ", Ir[x], Ig[x], Ib[x]);
 	}
-	printf("\n");
+	printf("\n");*/
 
 	for(x = 0; x < M; x++)
 	{
 		printf("%f ", W[x]);
 	}
-	printf("\n");*/
+	printf("\n");
 
 	genHDR->generateHDR(image, arrayofexptime, Ir, Ig, Ib, W, M, 3, ldr);
 
@@ -332,9 +332,8 @@ void testDebevec()
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
-			printf("%f %f %f ", image->getImage()[y * image->getWidth() * 3 + x * 3 + 0], 
-				image->getImage()[y * image->getWidth() * 3 + x * 3 + 1], 
-				image->getImage()[y * image->getWidth() * 3 + x * 3 + 2]);
+			printf("%f ", image->getImage()[y * image->getWidth() * 3 + x * 3 + 0]
+				);
 		}
 		printf("\n");
 		Sleep(500);

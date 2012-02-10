@@ -363,6 +363,11 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
 	unsigned int size_array = num_ldr * sizeof(float);
 	ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_array_of_exp_time, CL_TRUE, 0, 
 		size_array, array_of_exp_time, 0, NULL, NULL);
+
+	unsigned int size_w = m * sizeof(cl_float);
+	ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_w, CL_TRUE, 0, 
+		size_w, w, 0, NULL, NULL);
+
 	unsigned int size_i = num_ldr * sizeof(int);
 	ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_i_lower, CL_TRUE, 0, 
 		size_i, i_lower, 0, NULL, NULL);
