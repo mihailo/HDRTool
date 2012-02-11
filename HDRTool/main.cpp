@@ -706,7 +706,8 @@ void testConvertToBW()
 	
 	Image<unsigned char> *bw = new Image<unsigned char>(1, image->getHeight(), image->getWidth());
 	ConversionRGB2BW *conv = new ConversionRGB2BW();
-	conv->convertRGB2BW(image, bw);
+	long hist[256];
+	conv->convertRGB2BW(image, bw, hist);
 	
 	CImg<unsigned char> image1("IMG_3582.jpg");
 	image1._data = new unsigned char[bw->getWidth() * bw->getHeight() * 3];
@@ -727,6 +728,12 @@ void testConvertToBW()
 	delete bw;
 	delete conv;
 	delete image;
+
+	for(int i = 0; i < 256; i++)
+	{
+		printf("%d ", hist[i]);
+	}
+	printf("\n");
 }
 
 int main(int argc, char **argv)

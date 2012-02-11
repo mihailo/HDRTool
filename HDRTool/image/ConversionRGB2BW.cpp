@@ -15,10 +15,11 @@ ConversionRGB2BW::~ConversionRGB2BW()
 	delete core;
 }
 
-void ConversionRGB2BW::convertRGB2BW(Image<unsigned char> *img, Image<unsigned char> *img_bw)
+void ConversionRGB2BW::convertRGB2BW(Image<unsigned char> *img, Image<unsigned char> *img_bw, long *hi)
 {
 	image = img;
 	image_bw = img_bw;
+	hist = hi;
 
 	localWorkSize[0] = BLOCK_SIZE;
 	localWorkSize[1] = BLOCK_SIZE;
@@ -44,6 +45,11 @@ void ConversionRGB2BW::allocateOpenCLMemory()
 	cl_image_bw = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeBW, NULL, &ciErr2);
     ciErr1 |= ciErr2;
+
+	unsigned int sizeHist = sizeof(long) * 256;
+	cl_hist = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
+		sizeHist, NULL, &ciErr2);
+    ciErr1 |= ciErr2;
 	
 	logFile("clCreateBuffer...\n"); 
     if (ciErr1 != CL_SUCCESS)
@@ -63,9 +69,11 @@ void ConversionRGB2BW::setInputDataToOpenCLMemory()
 		sizeof(cl_mem), (void*)&cl_image);
     ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 1, 
 		sizeof(cl_mem), (void*)&cl_image_bw);
-    ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 2, 
+	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 2, 
+		sizeof(cl_mem), (void*)&cl_hist);
+    ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 3, 
 		sizeof(cl_int), (void*)&height);
-	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 3, 
+	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 4, 
 		sizeof(cl_int), (void*)&width);
     logFile("clSetKernelArg 0 - 3...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
@@ -94,6 +102,9 @@ void ConversionRGB2BW::getDataFromOpenCLMemory()
 	// Synchronous/blocking read of results, and check accumulated errors
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_image_bw, CL_TRUE, 0, 
 		size, image_bw->getImage(), 0, NULL, NULL);
+	unsigned int sizeHist = sizeof(long) * 256;
+	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hist, CL_TRUE, 0, 
+		sizeHist, hist, 0, NULL, NULL);
 	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
