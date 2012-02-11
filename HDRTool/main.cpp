@@ -10,6 +10,7 @@
 #include "image/fileformat/Radiance.h"
 #include "VectorADD.h"
 #include "image/ConversionRGB2RGBE.h"
+#include "image/ConversionRGB2BW.h"
 #include "image/ConversionRGBE2RGB.h"
 #include "tonemapping/LuminancePixel.h"
 #include "tonemapping/ToneMappingDrago03.h"
@@ -699,6 +700,34 @@ void testFile()
 	delete out_radiance;
 }
 
+void testConvertToBW()
+{
+	Image<unsigned char> *image = loadImage("IMG_3582.jpg");
+	
+	Image<unsigned char> *bw = new Image<unsigned char>(1, image->getHeight(), image->getWidth());
+	ConversionRGB2BW *conv = new ConversionRGB2BW();
+	conv->convertRGB2BW(image, bw);
+	
+	CImg<unsigned char> image1("IMG_3582.jpg");
+	image1._data = new unsigned char[bw->getWidth() * bw->getHeight() * 3];
+	image1._width = bw->getWidth();
+	image1._height = bw->getHeight();
+	for(int y = 0; y <image1._height; y++)
+	{
+		for(int x = 0; x < image1._width; x++)
+		{
+			image1._data[bw->getWidth() * bw->getHeight() * 0 + y * bw->getWidth() + x] = bw->getImage()[y * bw->getWidth() + x];
+			image1._data[bw->getWidth() * bw->getHeight() * 1 + y * bw->getWidth() + x] = bw->getImage()[y * bw->getWidth() + x];
+			image1._data[bw->getWidth() * bw->getHeight() * 2 + y * bw->getWidth() + x] = bw->getImage()[y * bw->getWidth() + x];
+		}
+		
+	}
+	
+	image1.save("test.bmp");
+	delete bw;
+	delete conv;
+	delete image;
+}
 
 int main(int argc, char **argv)
 {
@@ -710,8 +739,9 @@ int main(int argc, char **argv)
 	//testLuminancePixel(); //nije bas testirano, mada radi Drago03 sa tim
 	//testScaled2();
 	//testAlignJpegPic();
+	//testDebevec();
 	
-	testDebevec();
+	testConvertToBW();
 	//testImageAligne();
 	//testAligneRealImage();
 	//testVertical();
