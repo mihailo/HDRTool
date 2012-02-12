@@ -148,6 +148,11 @@ void LuminancePixel::clearDeviceMemory()
 	delete[] maxLumArray;
 }
 
+int LuminancePixel::getNumOfDim()
+{
+	return 2;
+}
+
 size_t* LuminancePixel::getSzGlobalWorkSize()
 {
 	return globalWorkSize;

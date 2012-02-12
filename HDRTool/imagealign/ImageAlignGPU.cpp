@@ -21,21 +21,22 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 	images = imgs;
 	num_images = num_of_image;
 
-	localWorkSize[0] = BLOCK_SIZE;
-	localWorkSize[1] = BLOCK_SIZE;
-	
-	//round values on upper value
-	logFile("%d %d \n", images[0]->getHeight(), images[0]->getWidth());
-	globalWorkSize[0] = roundUp(BLOCK_SIZE, images[0]->getHeight());
-	globalWorkSize[1] = roundUp(BLOCK_SIZE, images[0]->getWidth());
-
-
 	width = images[0]->getWidth();
 	height = images[0]->getHeight();
 	double quantile = 0.5;
 	noise = 4;
 	shift_bits = max((int)floor(log((double)min(width, height)) / log((double)2)) - 6, 0); //calculate log for base 2 log( n ) / log( 2 ); 
 	logFile("::mtb_alignment: width=%d, height=%d, shift_bits=%d\n", width, height, shift_bits);
+
+	localWorkSize[0] = BLOCK_SIZE;
+	localWorkSize[1] = BLOCK_SIZE;
+	localWorkSize[2] = shift_bits;
+
+	//round values on upper value
+	logFile("%d %d \n", images[0]->getHeight(), images[0]->getWidth());
+	globalWorkSize[0] = roundUp(BLOCK_SIZE, images[0]->getHeight());
+	globalWorkSize[1] = roundUp(BLOCK_SIZE, images[0]->getWidth());
+	globalWorkSize[2] = shift_bits;
 
 	//these arrays contain the shifts of each image (except the 0-th) wrt the previous one
 	shiftsX=new int[num_of_image - 1];
@@ -54,11 +55,11 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 		
 		core->runComputeUnit();
 
-		delete img1lum; 
-		delete img2lum;
+		//delete img1lum; 
+		//delete img2lum;
 
-		img1lum = NULL;
-		img2lum = NULL;
+		//img1lum = NULL;
+		//img2lum = NULL;
 	}
 }
 
@@ -207,6 +208,11 @@ void ImageAlignGPU::clearDeviceMemory()
 	//TODO
 	//clReleaseMemObject(cl_image);
 	//clReleaseMemObject(cl_image_bw);
+}
+
+int ImageAlignGPU::getNumOfDim()
+{
+	return 3;
 }
 
 size_t* ImageAlignGPU::getSzGlobalWorkSize()

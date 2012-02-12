@@ -139,6 +139,11 @@ void ConversionRGB2RGBE::clearDeviceMemory()
 	clReleaseMemObject(cl_intChannelE);
 }
 
+int ConversionRGB2RGBE::getNumOfDim()
+{
+	return 2;
+}
+
 size_t* ConversionRGB2RGBE::getSzGlobalWorkSize()
 {
 	return globalWorkSize;

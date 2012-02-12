@@ -33,6 +33,7 @@ public:
 
 	void calculate_luminance_pixel(Image<float> *img, float *avLum, float *maxLum);
 
+	int getNumOfDim();
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	
 };

@@ -118,6 +118,11 @@ void ConversionRGB2BW::clearDeviceMemory()
 	clReleaseMemObject(cl_image_bw);
 }
 
+int ConversionRGB2BW::getNumOfDim()
+{
+	return 2;
+}
+
 size_t* ConversionRGB2BW::getSzGlobalWorkSize()
 {
 	return globalWorkSize;

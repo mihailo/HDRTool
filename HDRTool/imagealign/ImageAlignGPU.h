@@ -32,7 +32,7 @@ private:
 
 	int * shiftsX, *shiftsY;
 	
-	size_t globalWorkSize[2], localWorkSize[2];
+	size_t globalWorkSize[3], localWorkSize[3];
 
 	int calculateLumImage(Image<unsigned char> *in, Image<unsigned char> *out, double quantile);
 public:
@@ -46,6 +46,7 @@ public:
 
 	void align(int num_of_image, Image<unsigned char> **images);
 
+	int getNumOfDim();
 	size_t *getSzGlobalWorkSize();        // 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		    // 2D var for # of work items in the work group	
 };

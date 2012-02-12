@@ -37,6 +37,7 @@ public:
 
 	void convertRGB2RGBE(Image<float> *image, unsigned int *channelR, unsigned int *channelG, unsigned int *channelB, unsigned int *channelE);
 
+	int getNumOfDim();
 	size_t *getSzGlobalWorkSize();        // 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		    // 2D var for # of work items in the work group	
 };

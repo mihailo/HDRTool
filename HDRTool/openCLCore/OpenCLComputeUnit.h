@@ -12,6 +12,7 @@ public:
 	virtual void getDataFromOpenCLMemory() = 0;
 	virtual void clearDeviceMemory() = 0;
 
+	virtual int getNumOfDim() = 0;
 	virtual size_t *getSzGlobalWorkSize() = 0;        
 	virtual size_t *getSzLocalWorkSize() = 0;
 

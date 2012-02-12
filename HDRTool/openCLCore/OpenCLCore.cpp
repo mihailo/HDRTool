@@ -115,7 +115,7 @@ void OpenCLCore::runKernel()
 {
 	// Launch kernel
     cl_int clError;
-	clError = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel, 2, NULL, compute->getSzGlobalWorkSize(), compute->getSzLocalWorkSize(), 0, NULL, NULL);
+	clError = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel, compute->getNumOfDim(), NULL, compute->getSzGlobalWorkSize(), compute->getSzLocalWorkSize(), 0, NULL, NULL);
 	logFile("clEnqueueNDRangeKernel (%s)...\n", kernelName); 
     if (clError != CL_SUCCESS)
     {

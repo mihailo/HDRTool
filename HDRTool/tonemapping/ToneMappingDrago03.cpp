@@ -125,6 +125,11 @@ void ToneMappingDrago03::clearDeviceMemory()
 	clReleaseMemObject(cl_picture);
 }
 
+int ToneMappingDrago03::getNumOfDim()
+{
+	return 2;
+}
+
 size_t* ToneMappingDrago03::getSzGlobalWorkSize()
 {
 	return globalWorkSize;

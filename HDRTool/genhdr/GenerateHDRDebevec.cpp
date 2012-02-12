@@ -420,6 +420,11 @@ void GenerateHDRDebevec::clearDeviceMemory()
 	clReleaseMemObject(cl_hdrpic);
 }
 
+int GenerateHDRDebevec::getNumOfDim()
+{
+	return 2;
+}
+
 size_t* GenerateHDRDebevec::getSzGlobalWorkSize()
 {
 	return globalWorkSize;
