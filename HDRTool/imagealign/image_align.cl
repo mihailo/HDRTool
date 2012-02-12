@@ -1,16 +1,9 @@
-long sumimage(unsigned char *diff)
-{
-  	
-	
-	
-	return sum;
-}
 __kernel void align(__global unsigned char *image1, __global unsigned char *image2,
 					__global unsigned char *threshold1, __global unsigned char *threshold2,
 					__global unsigned char *mask, __global unsigned char *mask,
 					__global unsigned char *diff,
 					int median1, int median2,
-					__global int x_shift, __global int y_shift, 
+					__global int *x_shift, __global int *y_shift, 
 					int shift_bits, int noise,
 					unsigned int const height, unsigned int const width)
 {
@@ -19,12 +12,21 @@ __kernel void align(__global unsigned char *image1, __global unsigned char *imag
 	
 	if (y >= height || x >= width)
     {   
-        //sync after calculations of thresholds and masks
-		barrier(CL_GLOBAL_MEM_FENCE);
-
 		for(int l = 0; l < shift_bits; l++)
 		{
-			//sync after calculations diff image
+			//sync after calculations of thresholds and masks
+			barrier(CL_GLOBAL_MEM_FENCE);
+			
+			
+			for
+				for
+					//sync after calculations diff image
+					barrier(CL_GLOBAL_MEM_FENCE);
+
+					//sunch after calculations of errors in colums
+					barrier(CL_GLOBAL_MEM_FENCE);
+
+			//sunch at end of one level
 			barrier(CL_GLOBAL_MEM_FENCE);
 		}
 	
@@ -40,7 +42,17 @@ __kernel void align(__global unsigned char *image1, __global unsigned char *imag
 		if(y % temp_level == 0 && x % temp_level == 0)
 		{
 			//scale
-			
+			if(temp_level > 1)
+			{
+				for(int i = 0; i < temp_level; i++)
+				{
+					for(int j = 0; < temp_level; j++)
+					{
+						image1[y * width + x] += image1[(y + i) * width + x + j];
+					}
+				}
+				image1[y * width + x] = image1[y * width + x] / temp_level / temp_level; 
+			}
 
 			
 			threshold1[y * width + x] = image1[y * width + x] < median1 ? 0 : 1;
@@ -49,22 +61,16 @@ __kernel void align(__global unsigned char *image1, __global unsigned char *imag
 			mask1[y * width + x] = (image1[y * width + x] > (median1 - noise)) && (image1[y * width + x] < (median1 + noise)) ? 0 : 1;
 			mask2[y * width + x] = (image1[y * width + x] > (median2 - noise)) && (image1[y * width + x] < (median2 + noise)) ? 0 : 1;
 	
-			//sync after calculations of thresholds and masks
+			//sync after calculations of thresholds and masks, becouse shifting of image2
 			barrier(CL_GLOBAL_MEM_FENCE);
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			int minerr = width * height; //depends on level
+			int temp_width = width / temp_level;
+			int temp_height = height / temp_level;
+			int minerr = temp_width * temp_height; //depends on level
+			int shift_x = -1;
+			int shift_y = -1;
 			diff[y * width + x] = 0; //fill(0)
+
 			for(int i = -1; i <= 1; i++) 
 			{
 				int dy = y + j;
@@ -79,22 +85,51 @@ __kernel void align(__global unsigned char *image1, __global unsigned char *imag
 						unsigned char pix = (threshold1[y * width + x] xor threshold2[dy * width + dx]) and mask1[y * width + x] and mask2[dy * width + dx]; 
 						diff[y * width + x] = pix;
 					}
+
+
+					//sync after calculations diff image
+					barrier(CL_GLOBAL_MEM_FENCE);
+
+					//sum_error
+					if(x == 0)
+					{
+						for(int i = 1; i < width; i++)
+						{
+							diff[y * width + 0] += diff[y * width + i];
+						}
+					}
+
+					//sunch after calculations of errors in colums
+					barrier(CL_GLOBAL_MEM_FENCE);
+
+					if(x == 0 && y == 0)
+					{
+						long err = 0;
+						for(int i = 0; i < height; i++)
+						{
+							err += diff[i * width + 0];
+						}
+						if( err < minerr ) 
+						{
+							minerr = err;
+							shift_x = dx;
+							shift_y = dy;
+						}
+					}
 				}
 			}
-		
-			//sync after calculations diff image
-			barrier(CL_GLOBAL_MEM_FENCE);
-
-			long err = sumimage(diff);
-			if( err < minerr ) 
+			
+			if(x == 0 && y == 0)
 			{
-				minerr = err;
-				shift_x = dx;
-				shift_y = dy;
+				x_shift[l] = x_shift;
+				y_shift[l] = y_shift;
 			}
+			//sunch at end of one level
+			barrier(CL_GLOBAL_MEM_FENCE);
 		}
 		else
 		{
+			//synch all another threads
 		}
 	}
 	

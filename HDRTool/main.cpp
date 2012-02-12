@@ -17,6 +17,7 @@
 #include "genhdr/GenerateHDRDebevec.h"
 #include "genhdr/Responses.h"
 #include "imagealign/ImageAlign.h"
+#include "imagealign/ImageAlignGPU.h"
 #include "CImg.h"
 #include <math.h>
 #include <iso646.h>
@@ -736,6 +737,20 @@ void testConvertToBW()
 	printf("\n");
 }
 
+void testAlignJpegPicGPU()
+{	
+	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
+
+	ImageAlignGPU *align = new ImageAlignGPU();
+	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
+
+	image_list[0] = img1;
+	image_list[1] = img2;
+	align->align(2, image_list);
+
+}
+
 int main(int argc, char **argv)
 {
 	//testRGB2RGBE();
@@ -747,8 +762,9 @@ int main(int argc, char **argv)
 	//testScaled2();
 	//testAlignJpegPic();
 	//testDebevec();
+	//testConvertToBW();
 	
-	testConvertToBW();
+	testAlignJpegPicGPU();
 	//testImageAligne();
 	//testAligneRealImage();
 	//testVertical();
