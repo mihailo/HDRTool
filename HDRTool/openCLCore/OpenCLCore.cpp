@@ -49,10 +49,13 @@ void OpenCLCore::setupOpenClPlatform()
         logFile("%d :Error in clGetDeviceIDs, Line %u in file %s !!!\n\n", clError, __LINE__, __FILE__);
     }
 	char cBuffer[1024];
+	
 	clGetDeviceInfo(cdDevice, CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
 	logFile("CL_DEVICE_NAME:       %s\n", cBuffer);
 	clGetDeviceInfo(cdDevice, CL_DRIVER_VERSION, sizeof(cBuffer), &cBuffer, NULL);
-	logFile("CL_DRIVER_VERSION: %s\n\n", cBuffer);
+	logFile("CL_DRIVER_VERSION: %s\n", cBuffer);
+	clGetDeviceInfo(cdDevice, CL_PLATFORM_VERSION, sizeof(cBuffer), &cBuffer, NULL);
+	logFile("CL_PLATFORM_VERSION: %s\n\n", cBuffer);
 
     //Create the context
     cxGPUContext = clCreateContext(0, 1, &cdDevice, NULL, NULL, &clError);

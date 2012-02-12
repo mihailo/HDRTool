@@ -51,7 +51,7 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 		//getLum(image2, img2lum, cdf2);
 		median2 = calculateLumImage(images[i + 1], img2lum, quantile);
 	
- 		logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d\n",median1,median2);
+ 		logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d\n",median1, median2);
 		
 		core->runComputeUnit();
 
@@ -66,8 +66,8 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 int ImageAlignGPU::calculateLumImage(Image<unsigned char> *in, Image<unsigned char> *out, double quantile)
 {
 		Image<unsigned char> *imgLum=new Image<unsigned char>(1, height, width);
-		long hist[256];
-		double cdf[256];
+		long *hist = new long[256];
+		double *cdf = new double[256];
 		int median;
 		
 		//getLum(image1, img1lum, cdf1);
@@ -78,12 +78,16 @@ int ImageAlignGPU::calculateLumImage(Image<unsigned char> *in, Image<unsigned ch
 		cdf[0] = w * (double)hist[0];
 		for(int i = 1; i < 256; i++) 
 		{
+			printf("%d ", hist[i]);
 			cdf[i] = (double)cdf[i-1] + w * (double)hist[i];
 		}
 		delete conv;
 		
 		for(median = 0; median < 256; median++) 
 			if( cdf[median] >= quantile ) break;
+
+		delete []hist;
+		delete []cdf;
 
 		return median;
 }

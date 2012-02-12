@@ -441,8 +441,8 @@ void testImageAligne()
 
 void testAlignJpegPic()
 {
-	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
-	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
+	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
 
 	/*unsigned char jedan = 255;
 	unsigned char nula = 0;
@@ -739,8 +739,8 @@ void testConvertToBW()
 
 void testAlignJpegPicGPU()
 {	
-	Image<unsigned char> *img1 = loadImage("IMG_6430.jpg");
-	Image<unsigned char> *img2 = loadImage("IMG_6431.jpg");
+	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
 
 	ImageAlignGPU *align = new ImageAlignGPU();
 	Image<unsigned char>** image_list = new Image<unsigned char>*[2];
