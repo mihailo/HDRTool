@@ -46,10 +46,10 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 	for (int i = 0; i < num_images - 1; i++) 
 	{
 		//getLum(image1, img1lum, cdf1);
-		median1 = calculateLumImage(images[i], img1lum, quantile);
+		median1 = calculateLumImage(images[i], &img1lum, quantile);
 
 		//getLum(image2, img2lum, cdf2);
-		median2 = calculateLumImage(images[i + 1], img2lum, quantile);
+		median2 = calculateLumImage(images[i + 1], &img2lum, quantile);
 	
  		logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d\n",median1, median2);
 		
@@ -63,7 +63,7 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 	}
 }
 
-int ImageAlignGPU::calculateLumImage(Image<unsigned char> *in, Image<unsigned char> *out, double quantile)
+int ImageAlignGPU::calculateLumImage(Image<unsigned char> *in, Image<unsigned char> **out, double quantile)
 {
 		Image<unsigned char> *imgLum=new Image<unsigned char>(1, height, width);
 		long *hist = new long[256];
@@ -73,6 +73,7 @@ int ImageAlignGPU::calculateLumImage(Image<unsigned char> *in, Image<unsigned ch
 		//getLum(image1, img1lum, cdf1);
 		ConversionRGB2BW *conv = new ConversionRGB2BW();
 		conv->convertRGB2BW(in, imgLum, hist);
+		*out = imgLum;
 		double size = height * width;
 		double w = 1.0 / size;
 		cdf[0] = w * (double)hist[0];
@@ -197,9 +198,9 @@ void ImageAlignGPU::getDataFromOpenCLMemory()
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_x_shift, CL_TRUE, 0, 
-		sizeShifts, x_shift, 0, NULL, NULL);
+		sizeShifts, shiftsX, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_y_shift, CL_TRUE, 0, 
-		sizeShifts, y_shift, 0, NULL, NULL);
+		sizeShifts, shiftsY, 0, NULL, NULL);
 	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

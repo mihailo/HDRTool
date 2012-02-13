@@ -4,7 +4,7 @@
 
 __kernel void rgb2bw(__global const unsigned char *image, 
 					   __global unsigned char *image_bw,
-					   __global long *hist,
+					   __global int *hist,
 					   int height, int width)
 {
 	int y = get_global_id(0);
@@ -14,12 +14,10 @@ __kernel void rgb2bw(__global const unsigned char *image,
     {   
         return; 
     }
-
-	unsigned char v = (image[(y * width + x) * 3 + 0] * 54 
-				+ image[(y * width + x) * 3 + 1] * 183
-				+ image[(y * width + x) * 3 + 2] * 19) / 256;
+	int sum = image[(y * width + x) * 3 + 0] * 54 + image[(y * width + x) * 3 + 1] * 183 + image[(y * width + x) * 3 + 2] * 19;
+	unsigned char v =  sum / 256;
 	image_bw[y * width + x] = v;
 
 	//synch ??????
-	atom_add(&hist[v], 1); //= hist[v] + 1;
+	atom_add(&hist[v], 1L); //= hist[v] + 1;
 }

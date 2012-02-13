@@ -709,7 +709,7 @@ void testConvertToBW()
 	ConversionRGB2BW *conv = new ConversionRGB2BW();
 	long hist[256];
 	conv->convertRGB2BW(image, bw, hist);
-	
+
 	CImg<unsigned char> image1("IMG_3582.jpg");
 	image1._data = new unsigned char[bw->getWidth() * bw->getHeight() * 3];
 	image1._width = bw->getWidth();

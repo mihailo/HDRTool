@@ -332,7 +332,7 @@ void ImageAlign::getLum(Image<unsigned char> *in, Image<unsigned char> *out, dou
 	for(i = 1; i < 256; i++) 
 	{
 		cdf[i] = (double)cdf[i-1] + w * (double)hist[i];
-		//printf("%f ", cdf[i]);
+		printf("%d ", hist[i]);
 	}
 	//printf("\n");
 	return;

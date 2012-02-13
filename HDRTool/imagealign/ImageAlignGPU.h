@@ -21,7 +21,6 @@ private:
 	Image<unsigned char> *img1lum;
 	Image<unsigned char> *img2lum;
 	int median1,median2;
-	int *x_shift, *y_shift;
 	
 	cl_mem cl_image1;
 	cl_mem cl_image2;
@@ -34,7 +33,7 @@ private:
 	
 	size_t globalWorkSize[3], localWorkSize[3];
 
-	int calculateLumImage(Image<unsigned char> *in, Image<unsigned char> *out, double quantile);
+	int calculateLumImage(Image<unsigned char> *in, Image<unsigned char> **out, double quantile);
 public:
 	ImageAlignGPU();
 	~ImageAlignGPU();
