@@ -8,7 +8,7 @@
 #define RGB_NUM_OF_CHANNELS 3
 #define RGBE_NUM_OF_CHANNELS 4
 
-#define BLOCK_SIZE 8
+#define BLOCK_SIZE 16
 
 
 

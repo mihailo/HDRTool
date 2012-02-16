@@ -740,7 +740,7 @@ void testConvertToBW()
 void testAlignJpegPicGPU()
 {	
 	Image<unsigned char> *img1 = loadImage("IMG_3582.jpg");
-	Image<unsigned char> *img2 = loadImage("IMG_3583.jpg");
+	Image<unsigned char> *img2 = loadImage("IMG_3582.jpg");
 
 	ImageAlignGPU *align = new ImageAlignGPU();
 	Image<unsigned char>** image_list = new Image<unsigned char>*[2];

@@ -26,12 +26,14 @@ private:
 	cl_mem cl_image2;
 	cl_mem cl_threshold1, cl_threshold2;
 	cl_mem cl_mask1, cl_mask2;
-	cl_mem cl_diff;
+	cl_mem cl_local_error;
+	cl_mem cl_errors;
 	cl_mem cl_x_shift, cl_y_shift;
 
 	int * shiftsX, *shiftsY;
+	long *errors;
 	
-	size_t globalWorkSize[3], localWorkSize[3];
+	size_t globalWorkSize[2], localWorkSize[2];
 
 	int calculateLumImage(Image<unsigned char> *in, Image<unsigned char> **out, double quantile);
 public:

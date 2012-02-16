@@ -56,7 +56,7 @@ void OpenCLCore::setupOpenClPlatform()
 	logFile("CL_DRIVER_VERSION: %s\n", cBuffer);
 	clGetDeviceInfo(cdDevice, CL_PLATFORM_VERSION, sizeof(cBuffer), &cBuffer, NULL);
 	logFile("CL_PLATFORM_VERSION: %s\n\n", cBuffer);
-
+	
     //Create the context
     cxGPUContext = clCreateContext(0, 1, &cdDevice, NULL, NULL, &clError);
     logFile("clCreateContext...\n"); 

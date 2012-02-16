@@ -30,26 +30,30 @@ void ImageAlignGPU::align(int num_of_image, Image<unsigned char> **imgs)
 
 	localWorkSize[0] = BLOCK_SIZE;
 	localWorkSize[1] = BLOCK_SIZE;
-	localWorkSize[2] = shift_bits;
+	//localWorkSize[2] = 2;
 
 	//round values on upper value
 	logFile("%d %d \n", images[0]->getHeight(), images[0]->getWidth());
 	globalWorkSize[0] = roundUp(BLOCK_SIZE, images[0]->getHeight());
 	globalWorkSize[1] = roundUp(BLOCK_SIZE, images[0]->getWidth());
-	globalWorkSize[2] = shift_bits;
+	//globalWorkSize[2] = 2;
+	
+	errors = new long[9];
 
 	//these arrays contain the shifts of each image (except the 0-th) wrt the previous one
-	shiftsX=new int[num_of_image - 1];
-	shiftsY=new int[num_of_image - 1];
+	shiftsX=new int[shift_bits];
+	shiftsY=new int[shift_bits];
 
 	//find the shitfs
 	for (int i = 0; i < num_images - 1; i++) 
 	{
 		//getLum(image1, img1lum, cdf1);
 		median1 = calculateLumImage(images[i], &img1lum, quantile);
+		//img1lum = new Image<unsigned char>(1, 3888, 2592);
 
 		//getLum(image2, img2lum, cdf2);
 		median2 = calculateLumImage(images[i + 1], &img2lum, quantile);
+		//img2lum = new Image<unsigned char>(1, 3888, 2592);
 	
  		logFile("::mtb_alignment: align::medians, image 1: %d, image 2: %d\n",median1, median2);
 		
@@ -116,8 +120,14 @@ void ImageAlignGPU::allocateOpenCLMemory()
 	cl_mask2 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeImage, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
-	cl_diff = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
-		sizeImage, NULL, &ciErr2);
+	
+	/*cl_local_error = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
+		sizeof(long), NULL, &ciErr2);
+	ciErr1 |= ciErr2;*/
+	
+	unsigned int size_errors = sizeof(long) * 9;
+	cl_errors = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
+		size_errors, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
 
 	unsigned int sizeShifts = sizeof(int) * shift_bits;
@@ -152,24 +162,26 @@ void ImageAlignGPU::setInputDataToOpenCLMemory()
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 5, 
 		sizeof(cl_mem), (void*)&cl_mask2);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 6, 
-		sizeof(cl_mem), (void*)&cl_diff);
+		sizeof(long) * 9, 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 7, 
-		sizeof(cl_int), (void*)&median1);
+		sizeof(cl_mem), (void*)&cl_errors);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 8, 
-		sizeof(cl_int), (void*)&median2);
+		sizeof(cl_int), (void*)&median1);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 9, 
-		sizeof(cl_mem), (void*)&cl_x_shift);
+		sizeof(cl_int), (void*)&median2);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 10, 
-		sizeof(cl_mem), (void*)&cl_y_shift);
+		sizeof(cl_mem), (void*)&cl_x_shift);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 11, 
-		sizeof(cl_int), (void*)&shift_bits);
+		sizeof(cl_mem), (void*)&cl_y_shift);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 12, 
+		sizeof(cl_int), (void*)&shift_bits);
+	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 13, 
 		sizeof(cl_int), (void*)&noise);
-    ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 13, 
+    ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 14, 
 		sizeof(cl_int), (void*)&height);
-	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 14, 
+	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 15, 
 		sizeof(cl_int), (void*)&width);
-    logFile("clSetKernelArg 0 - 14...\n\n"); 
+    logFile("clSetKernelArg 0 - 15...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
 		logFile("%d :Error in clSetKernelArg, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
@@ -201,6 +213,20 @@ void ImageAlignGPU::getDataFromOpenCLMemory()
 		sizeShifts, shiftsX, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_y_shift, CL_TRUE, 0, 
 		sizeShifts, shiftsY, 0, NULL, NULL);
+	
+
+	unsigned int sizeErrors = sizeof(long) * 9;
+	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_errors, CL_TRUE, 0, 
+		sizeErrors, errors, 0, NULL, NULL);
+
+	for(int i = 0; i < 9; i++)
+	{
+		printf("%d ", errors[i]);
+	}
+	printf("\n");
+
+	printf("X = %d Y = %d \n", shiftsX[0], shiftsY[0]);
+
 	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -217,7 +243,7 @@ void ImageAlignGPU::clearDeviceMemory()
 
 int ImageAlignGPU::getNumOfDim()
 {
-	return 3;
+	return 2;
 }
 
 size_t* ImageAlignGPU::getSzGlobalWorkSize()

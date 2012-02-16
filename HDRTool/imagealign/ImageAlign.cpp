@@ -290,7 +290,7 @@ long ImageAlign::sumimage(Image<unsigned char> *img)
 		}
 		//printf("\n");
 	}
-	//printf("ttl = %d\n", ttl);
+	printf("ttl = %d\n", ttl);
 	return ttl;
 }
 
