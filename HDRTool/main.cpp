@@ -7,6 +7,7 @@
 #include "utils/Log.h"
 #include "utils/Consts.h"
 #include "utils/clUtil/OpenCLUtil.h"
+#include "utils/timer/hr_time.h"
 #include "image/fileformat/Radiance.h"
 #include "VectorADD.h"
 #include "image/ConversionRGB2RGBE.h"
@@ -768,9 +769,14 @@ int main(int argc, char **argv)
 	//testImageAligne();
 	//testAligneRealImage();
 	//testVertical();
+	
+	CStopWatch timer;
+	timer.startTimer();
+	printf("\n");
+	timer.stopTimer();
+	timer.getElapsedTime();
+	printf("%f ", timer.getElapsedTime());
 
-	
-	
 	printf("\n\nThe End\n\n");
 
 	system("Pause");

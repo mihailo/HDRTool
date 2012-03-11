@@ -108,7 +108,7 @@ void ImageAlignGPU::allocateOpenCLMemory()
 	cl_image2 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeImage, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
-	cl_threshold1 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
+	/*cl_threshold1 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeImage, NULL, &ciErr2);
 	ciErr1 |= ciErr2;
 	cl_threshold2 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
@@ -119,7 +119,7 @@ void ImageAlignGPU::allocateOpenCLMemory()
 	ciErr1 |= ciErr2;
 	cl_mask2 = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeImage, NULL, &ciErr2);
-	ciErr1 |= ciErr2;
+	ciErr1 |= ciErr2;*/
 	
 	/*cl_local_error = clCreateBuffer(core->getGPUContext(), CL_MEM_READ_WRITE, 
 		sizeof(long), NULL, &ciErr2);
@@ -154,13 +154,13 @@ void ImageAlignGPU::setInputDataToOpenCLMemory()
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 1, 
 		sizeof(cl_mem), (void*)&cl_image2);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 2, 
-		sizeof(cl_mem), (void*)&cl_threshold1);
+		sizeof(unsigned char) * (BLOCK_SIZE + 2) * (BLOCK_SIZE + 2), 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 3, 
-		sizeof(cl_mem), (void*)&cl_threshold2);
+		sizeof(unsigned char) * (BLOCK_SIZE + 2) * (BLOCK_SIZE + 2), 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 4, 
-		sizeof(cl_mem), (void*)&cl_mask1);
+		sizeof(unsigned char) * (BLOCK_SIZE + 2) * (BLOCK_SIZE + 2), 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 5, 
-		sizeof(cl_mem), (void*)&cl_mask2);
+		sizeof(unsigned char) * (BLOCK_SIZE + 2) * (BLOCK_SIZE + 2), 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 6, 
 		sizeof(long) * 9, 0);
 	ciErr1 |= clSetKernelArg(core->getOpenCLKernel(), 7, 
