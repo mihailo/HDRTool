@@ -151,7 +151,7 @@ void testRGBE2RGB()
 	printf("sad\n");
 	conv->convertRGBE2RGB(r, g, b, e, image);
 
-	for(y=0; y<image->getHeight(); y++)
+	/*for(y=0; y<image->getHeight(); y++)
 	{
 		for(x=0; x<image->getWidth(); x++)
 		{
@@ -159,7 +159,7 @@ void testRGBE2RGB()
 			printf("%f %f %f ", adr[0], adr[1], adr[2]);
 		}
 		printf("\n\n");
-	}
+	}*/
 
 	/*for(y=0; y<image->getHeight(); y++)
 	{
@@ -266,19 +266,6 @@ void testDebevec()
 		}
 	}
 
-	/*for(int k = 0; k < 3; k++)
-	{
-		for(y=0; y<image->getHeight(); y++)
-		{
-			for(x=0; x<image->getWidth(); x++)
-			{
-				printf("%d %d %d ", ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 0], 
-					ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 1], 
-					ldr[k * image->getHeight() * image->getWidth() * 3 + y * image->getWidth() * 3 + x * 3 + 2]);
-			}
-			printf("\n");
-		}
-	}*/
 	
 	GenerateHDRDebevec *genHDR = new GenerateHDRDebevec();
 	float *arrayofexptime = new float[3];
@@ -758,24 +745,17 @@ int main(int argc, char **argv)
 	//testRGBE2RGB();
 	
 	//testFile();
-	//testDrago03();
+	testDrago03();
 	//testLuminancePixel(); //nije bas testirano, mada radi Drago03 sa tim
 	//testScaled2();
 	//testAlignJpegPic();
 	//testDebevec();
 	//testConvertToBW();
 	
-	testAlignJpegPicGPU();
+	//testAlignJpegPicGPU();
 	//testImageAligne();
 	//testAligneRealImage();
 	//testVertical();
-	
-	CStopWatch timer;
-	timer.startTimer();
-	printf("\n");
-	timer.stopTimer();
-	timer.getElapsedTime();
-	printf("%f ", timer.getElapsedTime());
 
 	printf("\n\nThe End\n\n");
 

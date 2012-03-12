@@ -4,6 +4,8 @@
 #include <math.h>
 
 #include "../../utils/Consts.h"
+#include "../../utils/timer/hr_time.h"
+#include "../../utils/Log.h"
 
 Radiance::Radiance()
 {
@@ -200,9 +202,8 @@ void Radiance::readRadianceData(Image<float> *image)
 
 	}
 	
-	//creatStopwatch();
-	//int timer_id = startStopwatch();
-	
+	CStopWatch timer;
+	timer.startTimer();
 	for(y = 0; y < image->getHeight(); y++)
 	{
 		unsigned int x;
@@ -224,12 +225,9 @@ void Radiance::readRadianceData(Image<float> *image)
 			//image->getPreviewImage()[y * image->getWidth() * 3 + x * 3 + 2] = clampS(b, 0.0f, 255.0f);
 		}
 		//printf("\n");
-
-
 	}
-	//float time = getTime(timer_id);
-	//addTime("convert rgbe to rgb: ", time);
-	//destroyStopwatch();
+	timer.stopTimer();
+	logFile("rgbe2rgbCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
 	
 	delete[] img_rgbe;
 	delete[] scanline;
@@ -399,8 +397,8 @@ void Radiance::writeFile(Image<float> *image)
 	Trgbe* scanlineB = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
 	Trgbe* scanlineE = new Trgbe[image->getWidth() * image->getHeight()];//malloc(sizeof(Trgbe) * width * height); //new Trgbe[width];
 	
-	//creatStopwatch();
-	//int timer_id = startStopwatch();
+	CStopWatch timer;
+	timer.startTimer();
 	unsigned int x,y;
 	for(y = 0; y < image->getHeight(); y++)
 	{
@@ -416,6 +414,8 @@ void Radiance::writeFile(Image<float> *image)
 			scanlineE[y * image->getWidth() + x] = p.e;
 		}
 	}
+	timer.stopTimer();
+	logFile("rgb2rgbeCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
 	
 	//float time = getTime(timer_id);
 	//addTime("convert rgb to rgbe: ", time);

@@ -4,6 +4,7 @@
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
 #include "../utils/clUtil/OpenCLUtil.h"
+#include "../utils/timer/hr_time.h"
 
 ConversionRGB2BW::ConversionRGB2BW()
 {
@@ -84,11 +85,20 @@ void ConversionRGB2BW::setInputDataToOpenCLMemory()
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
-    // Asynchronous write of data to GPU device
+    clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
+	// Asynchronous write of data to GPU device
 	unsigned int size = sizeof(unsigned char) * image->getHeight() * image->getWidth() * 3;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_image, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
-    logFile("clEnqueueWriteBuffer ...\n"); 
+    
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGB2BW,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+	
+	logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
 		logFile("%d :Error in clEnqueueWriteBuffer, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);
@@ -97,6 +107,11 @@ void ConversionRGB2BW::setInputDataToOpenCLMemory()
 
 void ConversionRGB2BW::getDataFromOpenCLMemory()
 {
+	
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+
 	unsigned int size = image->getHeight() * image->getWidth() * sizeof(unsigned char);
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
@@ -105,6 +120,12 @@ void ConversionRGB2BW::getDataFromOpenCLMemory()
 	unsigned int sizeHist = sizeof(long) * 256;
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hist, CL_TRUE, 0, 
 		sizeHist, hist, 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGB2BW,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
+
+
 	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

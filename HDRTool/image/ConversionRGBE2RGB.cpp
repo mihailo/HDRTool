@@ -4,6 +4,7 @@
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
 #include "../utils/clUtil/OpenCLUtil.h"
+#include "../utils/timer/hr_time.h"
 
 ConversionRGBE2RGB::ConversionRGBE2RGB()
 {
@@ -104,6 +105,10 @@ void ConversionRGBE2RGB::setInputDataToOpenCLMemory()
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_uint) * image->getHeight() * image->getWidth();
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_intChannelR, CL_TRUE, 0, 
@@ -117,6 +122,11 @@ void ConversionRGBE2RGB::setInputDataToOpenCLMemory()
 	ciErr2 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_intChannelE, CL_TRUE, 0, 
 		size, channelE, 0, NULL, NULL);
 	ciErr1 |= ciErr2;
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGBE2RGB,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+
 	
 	logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
@@ -127,13 +137,22 @@ void ConversionRGBE2RGB::setInputDataToOpenCLMemory()
 
 void ConversionRGBE2RGB::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	unsigned int size = image->getHeight() * image->getWidth() * sizeof(cl_float) * RGB_NUM_OF_CHANNELS;
 	cl_int ciErr1;			// Error code var
 	
 	// Synchronous/blocking read of results, and check accumulated errors
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
-    logFile("clEnqueueReadBuffer ...\n\n"); 
+    
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGBE2RGB,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
+	
+	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
 		logFile("%d :Error in clEnqueueReadBuffer, Line %u in file %s !!!\n\n", ciErr1, __LINE__, __FILE__);

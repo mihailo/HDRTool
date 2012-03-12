@@ -3,6 +3,7 @@
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
 #include "../utils/clUtil/OpenCLUtil.h"
+#include "../utils/timer/hr_time.h"
 
 
 GenerateHDRDebevec::GenerateHDRDebevec()
@@ -101,7 +102,13 @@ void GenerateHDRDebevec::generateHDR(Image<float> *img, float *arrayofexptime, f
 	}
 	printf("\n");
 
-	//calcHDRCPU();
+	/*CStopWatch timer;
+	timer.startTimer();
+	calcHDRCPU();
+	timer.stopTimer();
+	logFile("genHDRCPU,calc_time, , ,%f, \n", timer.getElapsedTime());*/
+	
+	//paralel version
 	core->runComputeUnit();
 }
 
@@ -356,6 +363,10 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+
     // Asynchronous write of data to GPU device
 	unsigned int size_ldr = num_ldr * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS * sizeof(unsigned char);
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_ldr_img, CL_TRUE, 0, 
@@ -380,6 +391,11 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
 		size_Irgb, ig, 0, NULL, NULL);
 	ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_ib, CL_TRUE, 0, 
 		size_Irgb, ib, 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuDEBEVEC,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+
 	logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -389,6 +405,10 @@ void GenerateHDRDebevec::setInputDataToOpenCLMemory()
 
 void GenerateHDRDebevec::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	// Synchronous/blocking read of results, and check accumulated errors
 	cl_int ciErr1;			// Error code var
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
@@ -398,6 +418,10 @@ void GenerateHDRDebevec::getDataFromOpenCLMemory()
 	unsigned int size_hdrpic = sizeof(unsigned char) * image->getWidth() * image->getHeight() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_hdrpic, CL_TRUE, 0, 
 		size_hdrpic, image->getPreviewImage(), 0, NULL, NULL);	
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuDEBEVEC,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
 
     logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)

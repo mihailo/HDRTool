@@ -1,5 +1,8 @@
 #include <windows.h>
 
+#ifndef _CSTOPWATCH_H_
+#define _CSTOPWATCH_H_
+
 typedef struct {
     LARGE_INTEGER start;
     LARGE_INTEGER stop;
@@ -17,3 +20,5 @@ public:
 	void stopTimer( );
 	double getElapsedTime();
 };
+
+#endif

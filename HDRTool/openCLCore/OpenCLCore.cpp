@@ -3,6 +3,7 @@
 
 #include "../utils/Log.h"
 #include "../utils/clUtil/OpenCLUtil.h"
+#include "../utils/timer/hr_time.h"
 
 
 OpenCLCore::OpenCLCore(OpenClComputeUnit *computeUnit, char *clSourceFile, char *kName)
@@ -118,7 +119,14 @@ void OpenCLCore::runKernel()
 {
 	// Launch kernel
     cl_int clError;
+	clFinish(cqCommandQueue);
+	CStopWatch timer;
+	timer.startTimer();
 	clError = clEnqueueNDRangeKernel(cqCommandQueue, ckKernel, compute->getNumOfDim(), NULL, compute->getSzGlobalWorkSize(), compute->getSzLocalWorkSize(), 0, NULL, NULL);
+	clFinish(cqCommandQueue);
+	timer.stopTimer();
+	timer.getElapsedTime();
+	logFile(" ,calc_time, , ,%f, \n", timer.getElapsedTime());
 	logFile("clEnqueueNDRangeKernel (%s)...\n", kernelName); 
     if (clError != CL_SUCCESS)
     {

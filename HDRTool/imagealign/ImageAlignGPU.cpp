@@ -4,6 +4,7 @@
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
 #include "../utils/clUtil/OpenCLUtil.h"
+#include "../utils/timer/hr_time.h"
 #include "../image/ConversionRGB2BW.h"
 
 ImageAlignGPU::ImageAlignGPU()
@@ -191,12 +192,20 @@ void ImageAlignGPU::setInputDataToOpenCLMemory()
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
     // Asynchronous write of data to GPU device
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
 	unsigned int sizeImage = sizeof(unsigned char) * height * width;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_image1, CL_TRUE, 0, 
 		sizeImage, img1lum->getImage(), 0, NULL, NULL);
 	ciErr1 |= clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_image2, CL_TRUE, 0, 
 		sizeImage, img2lum->getImage(), 0, NULL, NULL);
     
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	timer.getElapsedTime();
+	logFile("gpuAlign,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+	
 	logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -206,6 +215,10 @@ void ImageAlignGPU::setInputDataToOpenCLMemory()
 
 void ImageAlignGPU::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	unsigned int sizeShifts = sizeof(int) * shift_bits;
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
@@ -214,10 +227,13 @@ void ImageAlignGPU::getDataFromOpenCLMemory()
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_y_shift, CL_TRUE, 0, 
 		sizeShifts, shiftsY, 0, NULL, NULL);
 	
-
 	unsigned int sizeErrors = sizeof(long) * 9;
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_errors, CL_TRUE, 0, 
 		sizeErrors, errors, 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuAlign,data_out,%d,%d,%f, \n", height, width, timer.getElapsedTime());
 
 	for(int i = 0; i < 9; i++)
 	{

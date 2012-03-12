@@ -3,6 +3,7 @@
 
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
+#include "../utils/timer/hr_time.h"
 #include "../utils/clUtil/OpenCLUtil.h"
 
 ConversionRGB2RGBE::ConversionRGB2RGBE()
@@ -99,10 +100,19 @@ void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
+	
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGB2RGBE,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -112,6 +122,10 @@ void ConversionRGB2RGBE::setInputDataToOpenCLMemory()
 
 void ConversionRGB2RGBE::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	unsigned int size = image->getHeight() * image->getWidth() * sizeof(cl_uint);
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
@@ -123,6 +137,11 @@ void ConversionRGB2RGBE::getDataFromOpenCLMemory()
 		size, channelB, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_intChannelE, CL_TRUE, 0, 
 		size, channelE, 0, NULL, NULL);
+	
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuRGB2RGBE,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
+
     logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {

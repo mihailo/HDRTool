@@ -3,6 +3,7 @@
 
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
+#include "../utils/timer/hr_time.h"
 #include "../utils/clUtil/OpenCLUtil.h"
 
 LuminancePixel::LuminancePixel()
@@ -30,7 +31,29 @@ void LuminancePixel::calculate_luminance_pixel(Image<float> *img,
 	globalWorkSize[0] = roundUp(BLOCK_SIZE, image->getHeight());
 	globalWorkSize[1] = roundUp(BLOCK_SIZE, image->getWidth());
 
-	core->runComputeUnit();
+	//core->runComputeUnit();
+
+	CStopWatch timer;
+	timer.startTimer();
+	calcLumCPU();
+	timer.stopTimer();
+	logFile("LuminanceCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
+}
+
+void LuminancePixel::calcLumCPU()
+{
+	*avLuminance = 0.0f;
+  	*maxLuminance = 0.0f;
+
+  	int size = image->getWidth() * image->getHeight();
+	int i, j;
+  	for(i = 0; i<image->getHeight(); i++)
+		for(j = 0; j < image->getWidth(); j++)  	
+		{
+    			*avLuminance += log( image->getImage()[i * image->getWidth() * 3 + 3 * j + 1] + 1e-4 );
+    			*maxLuminance = ( image->getImage()[i * image->getWidth() * 3 + 3 * j + 1] > *maxLuminance ) ? image->getImage()[i * image->getWidth() * 3 + 3 * j + 1] : *maxLuminance ;
+  		}
+  	*avLuminance =exp(*avLuminance / size);
 }
 
 void LuminancePixel::allocateOpenCLMemory()
@@ -90,11 +113,21 @@ void LuminancePixel::setInputDataToOpenCLMemory()
 
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
+	
+
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
 
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuLum,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -104,6 +137,10 @@ void LuminancePixel::setInputDataToOpenCLMemory()
 
 void LuminancePixel::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	unsigned int size2DBlocks = sizeof(cl_float) * roundUp(BLOCK_SIZE, image->getHeight()) * roundUp(BLOCK_SIZE, image->getWidth())
 		/ BLOCK_SIZE / BLOCK_SIZE;
 	cl_int ciErr1;			// Error code var
@@ -112,6 +149,10 @@ void LuminancePixel::getDataFromOpenCLMemory()
 		size2DBlocks, avLumArray, 0, NULL, NULL);
 	ciErr1 |= clEnqueueReadBuffer(core->getCqCommandQueue(), cl_maxLumArray, CL_TRUE, 0, 
 		size2DBlocks, maxLumArray, 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuLum,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
     
 	logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
+#include "../utils/timer/hr_time.h"
 #include "../image/Image.h"
 #include <iso646.h>
 #include "../CImg.h"
@@ -112,7 +113,12 @@ void ImageAlign::mtbalign(Image<unsigned char> *image1, Image<unsigned char> *im
 	double cdf1[256], cdf2[256];
 	int median1,median2;
 
+	CStopWatch timer;
+	timer.startTimer();
 	getLum(image1, img1lum, cdf1);
+	timer.stopTimer();
+	logFile("RGB2BWCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
+
 	for(median1 = 0; median1 < 256; median1++) 
 		if( cdf1[median1] >= quantile ) break;
 	getLum(image2, img2lum, cdf2);
@@ -141,6 +147,9 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 		curr_y *= 2;
 	}
 	
+	CStopWatch timer;
+	timer.startTimer();
+
 	Image<unsigned char> *img1threshold = setbitmap(img1->getHeight(), img1->getWidth());
 	Image<unsigned char> *img1mask      = setbitmap(img1->getHeight(), img1->getWidth());
 	Image<unsigned char> *img2threshold = setbitmap(img1->getHeight(), img1->getWidth());
@@ -186,6 +195,9 @@ void ImageAlign::getExpShift(Image<unsigned char> *img1, const int median1,
 			}
 		}
 	}
+
+	timer.stopTimer();
+	logFile("alignCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
 
 	delete img1threshold; 
 	delete img1mask; 

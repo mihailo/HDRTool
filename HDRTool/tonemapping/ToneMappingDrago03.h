@@ -33,6 +33,8 @@ public:
 
 	void toneMapping_Drago03(Image<float> *image, float *avLum, float *maxLum, unsigned int *picture, float bias);
 
+	void calctoneMapping_Drago03CPU();
+
 	int getNumOfDim();
 	size_t *getSzGlobalWorkSize();		// 2D var for Total # of work items
 	size_t *getSzLocalWorkSize();		// 2D var for # of work items in the work group	

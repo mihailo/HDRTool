@@ -3,6 +3,7 @@
 
 #include "../utils/Log.h"
 #include "../utils/Consts.h"
+#include "../utils/timer/hr_time.h"
 #include "../utils/clUtil/OpenCLUtil.h"
 
 ToneMappingDrago03::ToneMappingDrago03()
@@ -38,8 +39,47 @@ void ToneMappingDrago03::toneMapping_Drago03(Image<float> *img, float *avLum, fl
 	globalWorkSize[0] = roundUp(BLOCK_SIZE, image->getHeight());
 	globalWorkSize[1] = roundUp(BLOCK_SIZE, image->getWidth());
 
-	core->runComputeUnit();
+	//core->runComputeUnit();
+	
+	
+	
+	CStopWatch timer;
+	timer.startTimer();
+	calctoneMapping_Drago03CPU();
+	timer.stopTimer();
+	logFile("ToneMappingCPU,calc_time, , ,%f, \n", timer.getElapsedTime());
 }
+
+float clampq(float v, float min, float max)
+{
+	if(v > max) v = max;
+	if(v < min) v = min;
+	return v;
+}
+float biasFunc(float b, float x)
+{
+	return pow(x, b);		// pow(x, log(bias)/log(0.5)
+} 
+void ToneMappingDrago03::calctoneMapping_Drago03CPU()
+{
+	const float LOG05 = -0.693147f; // log(0.5)
+
+	// Normal tone mapping of every pixel
+	int i, j;
+	for(j = 0; j < image->getHeight(); j++)
+		for(i = 0; i < image->getWidth(); i++)
+	    {
+			float Yw = image->getImage()[j * image->getWidth() * 3 + 3 * i + 1] / *avLuminance;
+			float interpol = log (2.0f + biasFunc(biasP, Yw / normMaxLum) * 8.0f);
+			float yg = ( log(Yw+1.0f)/interpol ) / divider; 
+
+			float scale = yg / image->getImage()[j * image->getWidth() * 3 + 3 * i + 1];
+	        picture[j * image->getWidth() * 3 + 3 * i + 0] = (unsigned int)(clampq(image->getImage()[j * image->getWidth() * 3 + 3 * i + 0] * scale, 0.0f, 1.0f) * 255);
+	        picture[j * image->getWidth() * 3 + 3 * i + 1] = (unsigned int)(clampq(image->getImage()[j * image->getWidth() * 3 + 3 * i + 1] * scale, 0.0f, 1.0f) * 255);
+	        picture[j * image->getWidth() * 3 + 3 * i + 2] = (unsigned int)(clampq(image->getImage()[j * image->getWidth() * 3 + 3 * i + 2] * scale, 0.0f, 1.0f) * 255);
+	     }
+}
+
 
 void ToneMappingDrago03::allocateOpenCLMemory()
 {
@@ -94,10 +134,19 @@ void ToneMappingDrago03::setInputDataToOpenCLMemory()
     // --------------------------------------------------------
     // Start Core sequence... copy input data to GPU, compute, copy results back
 
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+
     // Asynchronous write of data to GPU device
 	unsigned int size = sizeof(cl_float) * image->getHeight() * image->getWidth() * RGB_NUM_OF_CHANNELS;
 	ciErr1 = clEnqueueWriteBuffer(core->getCqCommandQueue(), cl_floatImage, CL_TRUE, 0, 
 		size, image->getImage(), 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuDrago,data_in,%d,%d,%f, \n", height, width, timer.getElapsedTime());
+
     logFile("clEnqueueWriteBuffer ...\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
@@ -107,11 +156,20 @@ void ToneMappingDrago03::setInputDataToOpenCLMemory()
 
 void ToneMappingDrago03::getDataFromOpenCLMemory()
 {
+	clFinish(core->getCqCommandQueue());
+	CStopWatch timer;
+	timer.startTimer();
+	
 	unsigned int size = image->getHeight() * image->getWidth() * sizeof(cl_uint) * RGB_NUM_OF_CHANNELS;
 	cl_int ciErr1;			// Error code var
 	// Synchronous/blocking read of results, and check accumulated errors
 	ciErr1 = clEnqueueReadBuffer(core->getCqCommandQueue(), cl_picture, CL_TRUE, 0, 
 		size, picture, 0, NULL, NULL);
+
+	clFinish(core->getCqCommandQueue());
+	timer.stopTimer();
+	logFile("gpuDrago,data_out,%d,%d,%f, \n", image->getHeight(), image->getWidth(), timer.getElapsedTime());
+
     logFile("clEnqueueReadBuffer ...\n\n"); 
     if (ciErr1 != CL_SUCCESS)
     {
